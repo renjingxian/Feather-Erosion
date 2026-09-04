@@ -5,22 +5,16 @@ const CURRENT_USER_KEY =
     "feather_erosion_current_user";
 
 
-
-/* =========================
-   读取所有注册用户
-========================= */
-
+//读取用户
 function loadUsers()
 {
-    const raw =
-        localStorage.getItem(USERS_KEY);
+    const raw = localStorage.getItem(USERS_KEY);
 
 
     if (!raw)
     {
         return [];
     }
-
 
     try
     {
@@ -36,11 +30,7 @@ function loadUsers()
 }
 
 
-
-/* =========================
-   保存所有注册用户
-========================= */
-
+//保存用户
 function saveUsers(users)
 {
     localStorage.setItem(
@@ -50,24 +40,17 @@ function saveUsers(users)
 }
 
 
-
-/* =========================
-   注册新用户
-========================= */
-
+//注册用户
 function registerUser(username, password)
 {
-    const users =
-        loadUsers();
+    const users = loadUsers();
 
-
-    const exists =
-        users.some(
-            function (user)
-            {
-                return user.username === username;
-            }
-        );
+    const exists = users.some(
+        function (user)
+        {
+            return user.username === username;
+        }
+    );
 
 
     if (exists)
@@ -97,18 +80,12 @@ function registerUser(username, password)
 
 
 
-/* =========================
-   登录
-========================= */
-
+//登录
 function loginUser(username, password)
 {
-    const users =
-        loadUsers();
-
-
-    const user =
-        users.find(
+    const users = loadUsers();
+    const user = users.find
+        (
             function (item)
             {
                 return item.username === username;
@@ -147,12 +124,7 @@ function loginUser(username, password)
 }
 
 
-
-/* =========================
-   获取当前登录用户
-   未登录时返回 null
-========================= */
-
+//当前登录用户
 function getCurrentUser()
 {
     return localStorage.getItem(
@@ -161,11 +133,7 @@ function getCurrentUser()
 }
 
 
-
-/* =========================
-   退出登录
-========================= */
-
+//退出登录
 function logoutUser()
 {
     localStorage.removeItem(

@@ -1,30 +1,13 @@
-const playerInfo =
-    document.getElementById("player-info");
-
-const startButton =
-    document.getElementById("start-button");
-
-const continueButton =
-    document.getElementById("continue-button");
-
-const achievementButton =
-    document.getElementById("achievement-button");
-
-const developerButton =
-    document.getElementById("developer-button");
-
-const settingsButton =
-    document.getElementById("settings-button");
-
-const logoutButton =
-    document.getElementById("logout-button");
+const playerInfo = document.getElementById("player-info");
+const startButton = document.getElementById("start-button");
+const continueButton = document.getElementById("continue-button");
+const achievementButton = document.getElementById("achievement-button");
+const developerButton = document.getElementById("developer-button");
+const settingsButton = document.getElementById("settings-button");
+const logoutButton = document.getElementById("logout-button");
 
 
-
-/* =========================
-   获取当前玩家
-========================= */
-
+//当前玩家
 function loadPlayer()
 {
     const username =
@@ -49,14 +32,8 @@ function loadPlayer()
 loadPlayer();
 
 
-
-/* =========================
-   开始游戏
-========================= */
-
-startButton.addEventListener(
-    "click",
-    function ()
+//开始游戏
+startButton.addEventListener("click",function ()
     {
         window.location.href =
             "game.html";
@@ -65,78 +42,46 @@ startButton.addEventListener(
 
 
 
-/* =========================
-   继续游戏
-========================= */
-
-continueButton.addEventListener(
-    "click",
-    function ()
+//继续游戏
+continueButton.addEventListener("click",function ()
     {
-        window.location.href =
-            "game.html";
+        window.location.href = "game.html";
     }
 );
 
 
 
-/* =========================
-   成就系统
-========================= */
-
-achievementButton.addEventListener(
-    "click",
-    function ()
+//成就系统
+achievementButton.addEventListener("click",function ()
     {
-        window.location.href =
-            "achievements.html";
+        window.location.href = "achievements.html";
     }
 );
 
 
 
-/* =========================
-   开发者介绍
-========================= */
-
-developerButton.addEventListener(
-    "click",
-    function ()
+//开发者介绍
+developerButton.addEventListener("click",function ()
     {
-        window.location.href =
-            "developers.html";
+        window.location.href = "developers.html";
     }
 );
 
 
 
-/* =========================
-   设置
-========================= */
-
-settingsButton.addEventListener(
-    "click",
-    function ()
+//设置
+settingsButton.addEventListener("click",function ()
     {
-        window.location.href =
-            "settings.html";
+        window.location.href = "settings.html";
     }
 );
 
 
 
-/* =========================
-   返回登录
-========================= */
-
-logoutButton.addEventListener(
-    "click",
-    function ()
+//返回登录
+logoutButton.addEventListener("click",function ()
     {
         logoutUser();
-
-
-        window.location.href =
-            "../index.html";
+        window.location.href = "../index.html";
     }
 );

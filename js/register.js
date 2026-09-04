@@ -38,7 +38,7 @@ registerButton.addEventListener("click", function ()
         setTimeout(function ()
         {
             window.location.href = "../index.html";
-        }, 2000);
+        }, 1000);
     }
 });
 
