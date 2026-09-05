@@ -1,0 +1,278 @@
+/* ============================================================
+   羽蚀纪 · 帝国城邦单线 · 纯剧情阅读器样式
+   自包含（不依赖外部 css）
+   主题：灰烬与羽 —— 白羽被黑晶侵蚀的挽歌
+   ============================================================ */
+
+:root {
+    --text:        #e8e2d4;   /* 主文字：陈旧骨白 */
+    --text-dim:    #b8af9e;   /* 次级：羊皮纸 */
+    --text-faint:  #7d766a;   /* 弱化：褪色墨迹 */
+    --gold:        #c9a15e;   /* 旧金 */
+    --gold-dim:    rgba(201, 161, 94, 0.55);
+    --crystal:     #7aa8a2;   /* 晶青 */
+    --danger:      #b06a5a;   /* 暗绯 */
+    --panel-bg:    rgba(18, 22, 29, 0.66);
+    --panel-border:        rgba(232, 226, 212, 0.12);
+    --panel-border-strong: rgba(232, 226, 212, 0.24);
+    --empire:      #c08a52;   /* 帝国黄铜 */
+    --font-serif: "Source Han Serif SC", "Noto Serif SC", "STSong", "SimSun", serif;
+    --font-sans:  "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.9;
+    /* 夜天：右上一抹月光蓝，左下一点晶蚀青，最上层暗角收边 */
+    background:
+        radial-gradient(120% 90% at 50% 40%, transparent 58%, rgba(0, 0, 0, 0.5) 100%),
+        radial-gradient(1100px 720px at 72% -8%, rgba(70, 85, 122, 0.30), transparent 62%),
+        radial-gradient(900px 680px at 10% 108%, rgba(122, 168, 162, 0.14), transparent 60%),
+        linear-gradient(180deg, #10141d 0%, #0b0e14 55%, #07090d 100%);
+    background-attachment: fixed;
+}
+
+/* —— 缓慢坠落的星尘 —— */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(1.6px 1.6px at 12% 22%, rgba(232, 226, 212, 0.50), transparent 55%),
+        radial-gradient(1.1px 1.1px at 34% 68%, rgba(232, 226, 212, 0.32), transparent 55%),
+        radial-gradient(1.3px 1.3px at 58% 15%, rgba(122, 168, 162, 0.34), transparent 55%),
+        radial-gradient(1.0px 1.0px at 76% 55%, rgba(232, 226, 212, 0.40), transparent 55%),
+        radial-gradient(1.4px 1.4px at 88% 82%, rgba(201, 161, 94, 0.30), transparent 55%),
+        radial-gradient(1.0px 1.0px at 45% 42%, rgba(232, 226, 212, 0.28), transparent 55%),
+        radial-gradient(1.2px 1.2px at 8% 88%,  rgba(232, 226, 212, 0.38), transparent 55%);
+    background-size: 220px 320px;
+    animation: dust-fall 70s linear infinite;
+}
+
+@keyframes dust-fall {
+    from { background-position: 0 0; }
+    to   { background-position: 0 320px; }
+}
+
+/* —— 胶片噪点 —— */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.06;
+}
+
+/* ------------------------------------------------------------
+   阅读器容器
+   ------------------------------------------------------------ */
+.reader {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 72px 22px 118px;
+    cursor: pointer;
+}
+
+/* —— 顶部进度条 —— */
+.progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(232, 226, 212, 0.06);
+    z-index: 3;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition: width 0.35s ease;
+}
+
+/* —— 舞台：正文居中 —— */
+.stage {
+    width: min(680px, 100%);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.segment {
+    width: 100%;
+    animation: rise 0.6s ease both;
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------
+   章节标题屏
+   ------------------------------------------------------------ */
+.seg-title .title-chapter {
+    margin: 0 0 12px;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1.3;
+    letter-spacing: 12px;
+    color: var(--text);
+    text-shadow: 0 0 26px rgba(232, 226, 212, 0.10);
+}
+
+.seg-title .title-ornament {
+    font-size: 12px;
+    letter-spacing: 8px;
+    color: var(--gold-dim);
+}
+
+.seg-title .title-sub {
+    margin-top: 16px;
+    font-size: 15px;
+    letter-spacing: 8px;
+    color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------
+   各段文字
+   ------------------------------------------------------------ */
+.text-scene {
+    margin: 0;
+    color: var(--text-faint);
+    font-style: italic;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.text-monologue {
+    margin: 0;
+    color: var(--text-dim);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 17px;
+}
+
+.text-narrate {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    white-space: pre-line;
+}
+
+/* 对白 */
+.speaker {
+    margin-bottom: 12px;
+    font-family: var(--font-serif);
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--gold);
+}
+
+.speaker::before,
+.speaker::after {
+    content: "◆";
+    margin: 0 10px;
+    font-size: 9px;
+    color: var(--gold-dim);
+    vertical-align: 2px;
+}
+
+.dialog-text {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text);
+    white-space: pre-line;
+}
+
+/* 结束 / 过渡 */
+.seg-end .end-text {
+    margin: 0 0 6px;
+    font-family: var(--font-serif);
+    font-size: 18px;
+    letter-spacing: 8px;
+    color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------
+   控制区
+   ------------------------------------------------------------ */
+.controls {
+    position: fixed;
+    bottom: 44px;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.continue {
+    pointer-events: auto;
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    letter-spacing: 6px;
+    padding: 12px 36px;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, box-shadow 0.25s;
+}
+
+.continue:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 18px rgba(201, 161, 94, 0.16);
+}
+
+.continue:active {
+    transform: translateY(1px);
+}
+
+.hint {
+    color: var(--text-faint);
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0.7;
+}
+
+/* ------------------------------------------------------------
+   响应式
+   ------------------------------------------------------------ */
+@media (max-width: 560px) {
+    .seg-title .title-chapter { font-size: 30px; letter-spacing: 7px; }
+    .seg-title .title-sub { letter-spacing: 4px; }
+    .dialog-text { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::before { animation: none; }
+    .segment { animation: none; }
+}

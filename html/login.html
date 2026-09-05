@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册-羽蚀纪</title>
+    <title>羽蚀纪：天空的悼亡曲</title>
     <link rel="stylesheet" href="../css/common.css">
 </head>
 <body>
@@ -15,17 +15,20 @@
             <p>天空的悼亡曲</p>
         </div>
 
-        <!-- 注册框 -->
+        <!-- 登录框 -->
         <div class="box">
-            <h2>创建账号</h2>
+            <h2>登录</h2>
 
             <input id="username" type="text" placeholder="请输入用户名">
             <input id="password" type="password" placeholder="请输入密码">
-            <input id="confirm-password" type="password" placeholder="请再次输入密码">
 
-            <button id="register-button" class="btn-primary">注册</button>
-            <button id="back-button" class="btn-link">返回登录</button>
-            <button id="home-button" class="btn-link">返回主页</button>
+            <button id="login-button" class="btn-primary">登录</button>
+
+            <div class="btn-group">
+                <button id="register-button" class="btn-link">注册</button>
+                <button id="home-button" class="btn-link">返回主页</button>
+                <button id="guest-button" class="btn-link">游客进入</button>
+            </div>
 
             <p id="message"></p>
         </div>
@@ -33,6 +36,6 @@
     </div>
 
     <script src="../js/auth.js"></script>
-    <script src="../js/register.js"></script>
+    <script src="../js/login.js"></script>
 </body>
 </html>

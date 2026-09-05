@@ -1,114 +1,40 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羽蚀纪：天空的悼亡曲</title>
-
-    <link
-        rel="stylesheet"
-        href="../css/mainmenu.css"
-    >
-
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/mainmenu.css">
 </head>
-
-
 <body>
-
-    <div class="main-menu-page">
-
+    <div class="page">
 
         <!-- 当前玩家 -->
-
-        <div id="player-info">
-            正在读取玩家信息……
-        </div>
-
+        <div id="player-info">正在读取玩家信息……</div>
 
         <!-- 游戏标题 -->
-
         <div class="title-area">
-
             <h1>羽蚀纪</h1>
-
             <p>天空的悼亡曲</p>
-
         </div>
-
 
         <!-- 主菜单 -->
-
         <div class="menu">
-
-            <button
-                id="start-button"
-                class="menu-button"
-            >
-                开始游戏
-            </button>
-
-
-            <button
-                id="continue-button"
-                class="menu-button"
-                disabled
-            >
-                继续游戏
-            </button>
-
-
-            <button
-                id="achievement-button"
-                class="menu-button"
-            >
-                成就系统
-            </button>
-
-
-            <button
-                id="developer-button"
-                class="menu-button"
-            >
-                开发者介绍
-            </button>
-
-
-            <button
-                id="settings-button"
-                class="menu-button"
-            >
-                设置
-            </button>
-
+            <button id="start-button" class="menu-button">开始游戏</button>
+            <button id="continue-button" class="menu-button" disabled>继续游戏</button>
+            <button id="achievement-button" class="menu-button">成就系统</button>
+            <button id="settings-button" class="menu-button">设置</button>
         </div>
-
 
         <!-- 底部 -->
-
         <div class="bottom-area">
-
-            <button id="logout-button">
-                返回登录
-            </button>
-
+            <button id="logout-button">返回登录</button>
         </div>
-
 
     </div>
 
-
     <script src="../js/auth.js"></script>
-
     <script src="../js/mainmenu.js"></script>
-
 </body>
-
 </html>

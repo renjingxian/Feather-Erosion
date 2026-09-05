@@ -35,8 +35,7 @@ loadPlayer();
 //开始游戏
 startButton.addEventListener("click",function ()
     {
-        window.location.href =
-            "game.html";
+        window.location.href = "prologue.html";
     }
 );
 
@@ -60,15 +59,6 @@ achievementButton.addEventListener("click",function ()
 
 
 
-//开发者介绍
-developerButton.addEventListener("click",function ()
-    {
-        window.location.href = "developers.html";
-    }
-);
-
-
-
 //设置
 settingsButton.addEventListener("click",function ()
     {
@@ -82,6 +72,6 @@ settingsButton.addEventListener("click",function ()
 logoutButton.addEventListener("click",function ()
     {
         logoutUser();
-        window.location.href = "../index.html";
+        window.location.href = "login.html";
     }
 );

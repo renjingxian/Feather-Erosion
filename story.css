@@ -1,0 +1,125 @@
+/* ============================================================
+   羽蚀纪 · 剧情阅读页样式（story*.html 共用）
+   依赖 common.css 的变量，不要单独引入
+   ============================================================ */
+
+/* 阅读卷轴：较宽的正文容器 */
+.story-box {
+    position: relative;
+    width: min(720px, 100vw - 40px);
+    padding: 46px 44px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    line-height: 2;
+    font-size: 16px;
+}
+
+/* 顶部一道金色细线，像卷首的装饰 */
+.story-box::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+
+.title-main {
+    text-align: center;
+    color: var(--text);
+    margin: 0.4em 0;
+}
+
+.story-box h1.title-main {
+    font-size: 26px;
+    letter-spacing: 6px;
+}
+
+.story-box h2.title-main {
+    font-size: 17px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+}
+
+.story-box h3 {
+    margin: 34px 0 10px;
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--gold);
+}
+
+/* 画面 / 场景说明：退后、居中、斜体，像舞台提示 */
+.scene {
+    color: var(--text-faint);
+    font-style: italic;
+    text-align: center;
+    margin: 26px 0;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+/* 对白：正文；说话人姓名用金色衬线突出 */
+.dialog {
+    color: var(--text);
+    margin: 20px 0;
+}
+
+.dialog strong {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: 2px;
+}
+
+/* 物品清单 */
+.story-box ul {
+    padding-left: 1.4em;
+    color: var(--text-dim);
+}
+
+.story-box ul li {
+    margin: 6px 0;
+}
+
+/* 选项：视觉小说式选择卡 */
+.option-box {
+    margin-top: 38px;
+}
+
+.option-box a {
+    position: relative;
+    display: block;
+    padding: 14px 20px 14px 22px;
+    margin: 12px 0;
+    border: 1px solid var(--panel-border);
+    border-radius: 2px;
+    background: rgba(232, 226, 212, 0.02);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.25s, border-color 0.25s, padding-left 0.2s;
+}
+
+/* 左侧金色标记条，悬浮时点亮 */
+.option-box a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.option-box a:hover {
+    background: rgba(232, 226, 212, 0.05);
+    border-color: var(--panel-border-strong);
+    padding-left: 26px;
+}
+
+.option-box a:hover::before {
+    opacity: 1;
+}

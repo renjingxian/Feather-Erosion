@@ -3,6 +3,7 @@ const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirm-password");
 const registerButton = document.getElementById("register-button");
 const backButton = document.getElementById("back-button");
+const homeButton = document.getElementById("home-button");
 const message = document.getElementById("message");
 
 registerButton.addEventListener("click", function ()
@@ -37,12 +38,17 @@ registerButton.addEventListener("click", function ()
     {
         setTimeout(function ()
         {
-            window.location.href = "../index.html";
+            window.location.href = "login.html";
         }, 1000);
     }
 });
 
 backButton.addEventListener("click", function ()
 {
-    window.location.href = "../index.html";
+    window.location.href = "login.html";
+});
+
+homeButton.addEventListener("click", function ()
+{
+    window.location.href = "index.html";
 });

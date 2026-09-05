@@ -4,6 +4,8 @@ const loginButton = document.getElementById("login-button");
 const guestButton = document.getElementById("guest-button");
 const message = document.getElementById("message");
 const registerButton = document.getElementById("register-button");
+const homeButton = document.getElementById("home-button");
+
 
 loginButton.addEventListener("click", function ()
 {
@@ -31,17 +33,22 @@ loginButton.addEventListener("click", function ()
         setTimeout(
             function ()
             {
-                window.location.href = "html/mainmenu.html";
+                window.location.href = "mainmenu.html";
             }, 1000);
     }
 });
 
 guestButton.addEventListener("click", function ()
 {
-    window.location.href = "html/mainmenu.html";
+    window.location.href = "mainmenu.html";
 });
 
 registerButton.addEventListener("click", function ()
 {
-    window.location.href = "html/register.html";
+    window.location.href = "register.html";
+});
+
+homeButton.addEventListener("click", function ()
+{
+    window.location.href = "index.html";
 });
