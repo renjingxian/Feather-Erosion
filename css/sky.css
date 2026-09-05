@@ -1,0 +1,151 @@
+/* ============================================================
+   羽蚀纪 · 天空线 · 视觉小说布局样式（CG / 剪影 / 分支）
+   依赖：common.css（主题/背景）+ story.css（通用对白 .speaker/.dialog-text）
+   ============================================================ */
+
+.story-wrap {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: #0c1018;
+    overflow: hidden;
+}
+
+/* 场景 CG 开场层 */
+.cg-block {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    background: #000000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cg-tip-text {
+    color: #a0a8b3;
+    font-size: 18px;
+}
+
+.skip-hint {
+    margin-top: 24px;
+    font-size: 14px;
+    color: #555e6b;
+}
+
+/* 人物剪影（背景图由 JS 设置） */
+.char-silhouette-wrap {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 100%;
+    height: 65%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+.char-silhouette {
+    height: 85%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center bottom;
+    display: none;
+}
+
+/* 背景层：图片 URL 由各页元素 style 属性提供 */
+.bg-layer {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.35;
+}
+
+/* 正文容器 */
+.story-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(680px, calc(100vw - 40px));
+    line-height: 1.9;
+    text-align: center;
+    display: none;
+}
+
+/* —— 叙述 / 旁白 —— */
+.scene {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.9;
+    text-align: center;
+    white-space: pre-line;
+}
+
+/* —— 对白容器：整体下移，靠近底部剪影（说话人/台词用 story.css 的 .speaker/.dialog-text） —— */
+.dialog {
+    margin: 0;
+    text-align: center;
+    position: relative;
+    top: 250px;
+}
+
+/* 物品清单 */
+.story-box ul {
+    padding-left: 1.4em;
+    color: var(--text-dim);
+    text-align: left;
+}
+
+.story-box ul li {
+    margin: 6px 0;
+}
+
+/* —— 分支选项 —— */
+.option-box {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(720px, calc(100vw - 40px));
+    display: none;
+}
+
+.option-box a {
+    position: relative;
+    display: block;
+    padding: 12px 20px 12px 24px;
+    margin: 12px 0;
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 2px;
+    background: transparent;
+    text-decoration: none;
+    color: var(--text);
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, box-shadow 0.25s, padding-left 0.2s;
+}
+
+.option-box a:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 18px rgba(201, 161, 94, 0.16);
+    padding-left: 28px;
+}
+
+/* —— 推进提示（文字样式见 story.css 的 .hint）—— */
+.hint {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    pointer-events: none;
+}

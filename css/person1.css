@@ -1,0 +1,35 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Microsoft YaHei", sans-serif;
+  background: #1a1a2e;
+  color: #fff;
+}
+.card {
+  width: 420px;
+  padding: 24px;
+  background: rgba(20, 24, 36, 0.95);
+  border: 2px solid #5cf2ff;
+  border-radius: 16px;
+  margin: 40px auto;
+}
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 16px;
+  border: 3px solid #5cf2ff;
+}
+h1 {
+  text-align: center;
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+p {
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+  text-indent: 2em;
+}

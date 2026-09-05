@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>羽蚀纪｜世界大地图</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+.map-container{
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+.world-map-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.map-hotspot{
+    position: absolute;
+    cursor: pointer;
+    background:rgba(255,0,0,0.25);
+}
+.map-hotspot::after{
+    content: attr(data-name);
+    position: absolute;
+    left: 50%;
+    top: -32px;
+    transform: translateX(-50%);
+    color:#e8d6b0;
+    font-size:14px;
+    white-space: nowrap;
+    display: none;
+}
+.map-hotspot:hover::after{
+    display:block;
+}
+    </style>
+</head>
+<body>
+<div class="map-container">
+    <img class="world-map-img" src="../images/world_map.jpg" alt="世界地图">
+
+    <div class="map-hotspot" data-name="天空之城" style="left:28%;top:4%;width:44%;height:46%;" onclick="window.location.href='story-sky.html'"></div>
+    <div class="map-hotspot" data-name="帝国城邦" style="left:1%;top:30%;width:34%;height:64%;" onclick="window.location.href='empire.html'"></div>
+    <div class="map-hotspot" data-name="精灵之森" style="left:62%;top:14%;width:37%;height:76%;" onclick="window.location.href='story-forest.html'"></div>
+    <div class="map-hotspot" data-name="地下古堡" style="left:27%;top:54%;width:46%;height:45%;" onclick="window.location.href='story-under.html'"></div>
+</div>
+
+<script>
+const playerRoute = localStorage.getItem("player_route");
+console.log("玩家选择的路线：",playerRoute);
+</script>
+
+</body>
+</html>
