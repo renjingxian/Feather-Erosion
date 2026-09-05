@@ -276,3 +276,9 @@ body::after {
     body::before { animation: none; }
     .segment { animation: none; }
 }
+
+/* 人物对白整体向下移动 */
+.seg-dialog {
+    position: relative;
+    top: 250px;
+}
