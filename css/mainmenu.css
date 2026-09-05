@@ -130,3 +130,11 @@ body {
 #logout-button:hover {
     color: var(--text);
 }
+
+body {
+    background-image: url("../images/main-bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}

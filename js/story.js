@@ -4,6 +4,39 @@
    数据写在 STORIES 中，页面通过 <body data-story="..."> 指定读取哪一段。
    ============================================================ */
 
+/*打字机效果*/
+function typeText(element, text, speed)
+{
+    element.textContent = "";
+
+    let i = 0;
+
+    var timer = setInterval(function ()
+    {
+        element.textContent += text[i];
+
+        i++;
+
+        if (i >= text.length)
+        {
+            clearInterval(timer);
+        }
+
+    }, speed);
+}
+
+/*剧本输入规范*/
+function escapeHtml(s)
+  {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  
+
+/*程序运行*/
 (function () {
   "use strict";
 
@@ -145,22 +178,21 @@
 
   var index = 0;
 
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  }
+/*辅助函数*/
 
-  function render() {
+/*剧本读取*/
+  function render()
+  {
     var seg = story[index];
     if (!seg) return;
 
+    /*创建新盒子、处理文本类型 */
     stage.innerHTML = "";
     var wrap = document.createElement("div");
     wrap.className = "segment seg-" + seg.type;
 
-    if (seg.type === "title") {
+    if (seg.type === "title")
+    {
       var h1 = document.createElement("h1");
       h1.className = "title-chapter";
       h1.textContent = seg.chapter;
@@ -171,13 +203,17 @@
       orn.textContent = "◆";
       wrap.appendChild(orn);
 
-      if (seg.subtitle) {
+      if (seg.subtitle)
+      {
         var sub = document.createElement("div");
         sub.className = "title-sub";
         sub.textContent = seg.subtitle;
         wrap.appendChild(sub);
       }
-    } else if (seg.type === "dialog") {
+    } 
+
+    else if (seg.type === "dialog")
+    {
       var name = document.createElement("div");
       name.className = "speaker";
       name.textContent = seg.speaker;
@@ -185,14 +221,20 @@
 
       var d = document.createElement("p");
       d.className = "dialog-text";
-      d.innerHTML = escapeHtml(seg.text);
+      typeText(d,seg.text,40);/*打字机效果实现 */
       wrap.appendChild(d);
-    } else if (seg.type === "end") {
+    } 
+
+    else if (seg.type === "end")
+    {
       var e = document.createElement("div");
       e.className = "end-text";
       e.textContent = seg.text;
       wrap.appendChild(e);
-    } else {
+    } 
+    
+    else
+    {
       var p = document.createElement("p");
       p.className = "text-" + seg.type;
       p.innerHTML = escapeHtml(seg.text);
@@ -215,7 +257,9 @@
     }
   }
 
-  function next() {
+  /*剧本推进*/
+  function next()
+  {
     var seg = story[index];
     if (seg && seg.type === "end" && seg.href) {
       window.location.href = seg.href;
@@ -229,8 +273,13 @@
 
   // 剧情跳转
   document.addEventListener("keydown", function (e) {
-    if (e.code === "Space" || e.code === "ArrowRight" || e.code === "Enter") {
+    if (e.key === "Space" || e.key === "ArrowRight" || e.key === "Enter")
+    {
       e.preventDefault();
+      if (e.repeat) 
+      {
+        return ;
+      }
       next();
     }
   });
