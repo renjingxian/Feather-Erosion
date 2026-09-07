@@ -8,27 +8,21 @@ const silhouetteDom = document.getElementById("silhouetteDom");
 function typeText(element, text, speed)
 {
     element.textContent = "";
-
     let i = 0;
-
-    var timer = setInterval(function ()
+    const timer = setInterval(function ()
     {
         element.textContent += text[i];
-
         i++;
-
-        if (i >= text.length)
-        {
-            clearInterval(timer);
-        }
-
+        if (i >= text.length) clearInterval(timer);
     }, speed);
 }
 
+/*当前剧情节点*/
 let currentNode = "start";
 
 //所有剧情节点
-const nodes = {
+const nodes = 
+{
     start: [
         {type:"narrator",text:"【试翼之塔｜天空之城底部入口】两座白晶高塔之间，一道光门闪烁。两名羽人守卫持矛而立，翅膀收拢在背后，目光锐利。"},
         {type:"char",speaker:"守卫A",text:"无翼者？流放之人不得返回。这是长老会的法令。"},
@@ -100,84 +94,140 @@ const nodes = {
     ]
 };
 
+/*当前节点数据*/
 let nodeData = nodes[currentNode];
 let pos = 0;
 
-function render(){
-    if(pos >= nodeData.length){
-        return;
-    }
-    const item = nodeData[pos];
+/*剧情渲染*/
+function render()
+{
+  if (pos >= nodeData.length) return;
+  const item = nodeData[pos];
 
-    if(item.type === "jump"){
-        currentNode = item.goto;
+  /*jump*/
+  if (item.type === "jump")
+  {
+    currentNode = item.goto;
+    nodeData = nodes[currentNode];
+    pos = 0;
+    render();
+    return;
+  }
+
+  /* 每次渲染前先隐藏旧内容 */
+  choiceDom.style.display = "none";
+  textDom.style.display = "none";
+  if (silhouetteDom) silhouetteDom.style.display = "none";
+
+  hint.textContent ="点击Enter/ Space/ ▸键 继续";
+
+  /*标题*/
+  if (item.type === "title")
+  {
+    const box = document.createElement("div");
+    const h1 = document.createElement("h1");
+    const orn = document.createElement("div");
+    box.className = "seg-title";
+    h1.className = "title-chapter";
+    h1.textContent = item.chapter;
+    box.appendChild(h1);
+    orn.className = "title-ornament";
+    orn.textContent = "◆";
+    box.appendChild(orn);
+
+    if (item.subtitle)
+    {
+      const sub = document.createElement("div");
+      sub.className = "title-sub";
+      sub.textContent = item.subtitle;
+      box.appendChild(sub);
+    }
+
+    textDom.innerHTML = "";
+    textDom.appendChild(box);
+    textDom.style.display = "block";
+  }
+
+  /*旁白 / 场景*/
+  else if (item.type === "narrator")
+  {
+    textDom.innerHTML = "";
+    const scene = document.createElement("div");
+    scene.className = "scene";
+    scene.textContent = item.text;
+    textDom.appendChild(scene);
+    textDom.style.display = "block";
+  }
+
+  /*人物对白*/
+  else if (item.type === "char")
+  {
+    const box = document.createElement("div");
+    const name = document.createElement("div");
+    const line = document.createElement("p");
+    box.className = "dialog";
+    name.className = "speaker";
+    name.textContent = item.speaker;
+    box.appendChild(name);
+    line.className = "dialog-text";
+    box.appendChild(line);
+    textDom.innerHTML = "";
+    textDom.appendChild(box);
+    textDom.style.display = "block";
+    typeText(line,item.text,40);
+  }
+
+  /*选择*/
+  else if (item.type === "choice")
+  {
+    hint.textContent = "";
+    choiceDom.innerHTML = "";
+    item.options.forEach(function (opt)
+    {
+      const a = document.createElement("a");
+      a.textContent = opt.label;
+      a.addEventListener("click",function ()
+      {
+        if (opt.next === "backmap")
+        {
+          window.location.href = "map.html";
+          return;
+        }
+
+        currentNode = opt.next;
         nodeData = nodes[currentNode];
         pos = 0;
         render();
-        return;
-    }
-
-    choiceDom.style.display = "none";
-    silhouetteDom.style.display = "none";
-    textDom.style.display = "none";
-    hint.textContent = "点击Enter/ Space/ ▸键 继续";
-
-    if(item.type === "narrator"){
-        textDom.innerHTML = `<div class="scene">${item.text}</div>`;
-        textDom.style.display = "block";
-    }else if(item.type === "char"){
-        const box = document.createElement("div");
-        box.className = "dialog";
-        const name = document.createElement("div");
-        name.className = "speaker";
-        name.textContent = item.speaker;
-        box.appendChild(name);
-        const line = document.createElement("p");
-        line.className = "dialog-text";
-        box.appendChild(line);
-        textDom.innerHTML = "";
-        textDom.appendChild(box);
-        textDom.style.display = "block";
-        typeText(line, item.text, 40);
-    }else if(item.type === "choice"){
-        hint.textContent = "";
-        choiceDom.innerHTML = "";
-        item.options.forEach(opt=>{
-            const a = document.createElement("a");
-            a.innerText = opt.label;
-            a.style.display = "block";
-            a.style.margin = "10px 0";
-            a.style.cursor = "pointer";
-            a.addEventListener("click",()=>{
-                if(opt.next === "backmap"){
-                    window.location.href = "map.html";
-                    return;
-                }
-                currentNode = opt.next;
-                nodeData = nodes[currentNode];
-                pos = 0;
-                render();
-            })
-            choiceDom.appendChild(a);
-        })
-        choiceDom.style.display = "block";
-    }
+      });
+      choiceDom.appendChild(a);
+    });
+    choiceDom.style.display = "block";
+  }
 }
 
-document.addEventListener("keydown",function(e){
-    if(e.key === " " || e.key === "ArrowRight" || e.key === "Enter"){
-        e.preventDefault();
-        if(e.repeat) return;
-        if(cgDom.style.display !== "none") return;
-        if(choiceDom.style.display === "block") return;
-        pos++;
-        render();
-    }
-})
+/*键盘推进剧情*/
+document.addEventListener("keydown",function (e)
+{
+  if (e.key === " "||e.key === "ArrowRight"||e.key === "Enter")
+  {
+    e.preventDefault();
+    if (e.repeat) return;/* 防止长按连续触发 */
+    if (cgDom && cgDom.style.display !== "none") return;/* CG 还没有关闭时不能推进 */
+    if (choiceDom.style.display === "block") return;/* 正在选择时不能通过 Enter 跳过 */
+    pos++;
+    render();
+  }
+});
 
-cgDom.addEventListener("click",()=>{
+/*点击 CG 开始剧情*/
+if (cgDom)
+{
+  cgDom.addEventListener("click",function ()
+  {
     cgDom.style.display = "none";
     render();
-})
+  });
+}
 
+/*第一次渲染*/
 render();
