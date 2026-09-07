@@ -132,36 +132,9 @@
     pointer-events: none;
 }
 
-.continue {
-    pointer-events: auto;
-    border: 1px solid var(--panel-border-strong);
-    border-radius: 2px;
-    background: transparent;
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-size: 14px;
-    letter-spacing: 6px;
-    padding: 12px 36px;
-    cursor: pointer;
-    transition: border-color 0.25s, color 0.25s, box-shadow 0.25s;
-}
-
-.continue:hover {
-    border-color: var(--gold);
-    color: var(--gold);
-    box-shadow: 0 0 18px rgba(201, 161, 94, 0.16);
-}
-
-.continue:active {
-    transform: translateY(1px);
-}
-
 /* —— 响应式 & 弱动效 —— */
 @media (max-width: 560px) {
     .seg-title .title-chapter { font-size: 30px; letter-spacing: 7px; }
     .seg-title .title-sub { letter-spacing: 4px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .segment { animation: none; }
-}

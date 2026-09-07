@@ -40,6 +40,7 @@ loginButton.addEventListener("click", function ()
 
 guestButton.addEventListener("click", function ()
 {
+    logoutUser();
     window.location.href = "mainmenu.html";
 });
 
@@ -50,5 +51,5 @@ registerButton.addEventListener("click", function ()
 
 homeButton.addEventListener("click", function ()
 {
-    window.location.href = "index.html";
+    window.location.href = "../index.html";
 });

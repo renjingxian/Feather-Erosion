@@ -33,3 +33,11 @@ p {
   margin: 0 0 12px;
   text-indent: 2em;
 }
+
+.back-home {
+    margin-top: 40px;
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: 1px;
+}

@@ -229,15 +229,6 @@ function escapeHtml(s)
     // 进度条
     var pct = story.length > 1 ? (index / (story.length - 1)) * 100 : 100;
     bar.style.width = pct + "%";
-
-    // 控制区文案
-    if (seg.type === "end") {
-      continueBtn.textContent = seg.label || "继续";
-      hint.textContent = "";
-    } else {
-      continueBtn.textContent = "继续 ▸";
-      hint.textContent = "点击Enter/ Space/ ▸键 继续";
-    }
   }
 
   /*剧本推进*/
@@ -256,7 +247,7 @@ function escapeHtml(s)
 
   // 剧情跳转
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Space" || e.key === "ArrowRight" || e.key === "Enter")
+    if (e.key === " " || e.key === "ArrowRight" || e.key === "Enter")
     {
       e.preventDefault();
       if (e.repeat) 

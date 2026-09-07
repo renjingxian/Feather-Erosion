@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李可依 · 羽蚀纪制作组</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top: #0D1017;
+    --bg-mid: #262C3B;
+    --bg-bot: #5B6478;
+    --ink: #EEF0F4;
+    --ink-dim: #A7AEBC;
+    --ink-faint: #6E7688;
+    --crystal: #B9D6E8;
+    --rule: rgba(238,240,244,0.22);
+    --panel: rgba(238,240,244,0.04);
+    --panel-line: rgba(238,240,244,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background: var(--bg-top);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page{
+    position: relative;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(185,214,232,0.10), transparent 60%),
+      linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 55%, var(--bg-bot) 100%);
+    overflow: hidden;
+  }
+
+  /* scattered speck texture, echoing the ink-splatter in the key art */
+  .specks{
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 8% 12%, rgba(238,240,244,0.5), transparent 60%),
+      radial-gradient(1px 1px at 22% 30%, rgba(238,240,244,0.35), transparent 60%),
+      radial-gradient(1.5px 1.5px at 78% 8%, rgba(238,240,244,0.4), transparent 60%),
+      radial-gradient(1px 1px at 88% 22%, rgba(238,240,244,0.3), transparent 60%),
+      radial-gradient(1px 1px at 60% 4%, rgba(238,240,244,0.3), transparent 60%),
+      radial-gradient(1.5px 1.5px at 35% 6%, rgba(238,240,244,0.35), transparent 60%);
+    opacity: 0.8;
+  }
+
+  .wrap{
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 88px 28px 60px;
+  }
+
+  /* ---------- decorative feather ---------- */
+
+  .feather{
+    position: absolute;
+    top: 40px;
+    right: -30px;
+    width: 180px;
+    height: auto;
+    opacity: 0.5;
+    transform: rotate(8deg);
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero{
+    text-align: center;
+    padding-bottom: 34px;
+    opacity: 0;
+    animation: rise 0.7s 0.1s ease-out forwards;
+  }
+
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero{ animation: none; opacity: 1; }
+  }
+
+  .eyebrow{
+    font-size: 13px;
+    color: var(--crystal);
+    letter-spacing: 0.14em;
+    margin: 0 0 18px;
+  }
+
+  .name{
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: clamp(38px, 9vw, 52px);
+    letter-spacing: 0.04em;
+    margin: 0 0 20px;
+    color: var(--ink);
+  }
+
+  .divider{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 0 0 22px;
+  }
+
+  .divider .line{
+    height: 1px;
+    width: 64px;
+    background: var(--rule);
+  }
+
+  .divider .dot{
+    width: 5px;
+    height: 5px;
+    background: var(--crystal);
+    transform: rotate(45deg);
+  }
+
+  .tagline{
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .tagline span{
+    padding: 0 12px;
+  }
+
+  .tagline span + span{
+    border-left: 1px solid var(--rule);
+  }
+
+  /* ---------- Photo ---------- */
+
+  .portrait{
+    margin: 48px 0 52px;
+    text-align: center;
+  }
+
+  .portrait-frame{
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+  }
+
+  .portrait-frame img{
+    display: block;
+    width: 100%;
+    max-width: 460px;
+    height: auto;
+    filter: saturate(0.94) brightness(0.98);
+  }
+
+  .portrait-cap{
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-weight: 300;
+  }
+
+  /* ---------- Section shell ---------- */
+
+  .section{
+    margin-bottom: 46px;
+  }
+
+  .section-title{
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+
+  .section-sub{
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin: 0 0 22px;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- Key art frame ---------- */
+
+  .art-frame{
+    margin: 0 0 24px;
+    text-align: center;
+  }
+
+  .art-frame img{
+    display: block;
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    margin: 0 auto;
+    border: 1px solid var(--panel-line);
+  }
+
+  .art-cap{
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- Responsibility tiles ---------- */
+
+  .tiles{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--panel-line);
+  }
+
+  @media (max-width: 560px){
+    .tiles{ grid-template-columns: 1fr; }
+  }
+
+  .tile{
+    background: #12151d;
+    padding: 22px 18px 24px;
+  }
+
+  .tile-mark{
+    width: 6px;
+    height: 6px;
+    background: var(--crystal);
+    transform: rotate(45deg);
+    margin-bottom: 14px;
+  }
+
+  .tile h3{
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--ink);
+  }
+
+  .tile p{
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--ink-dim);
+    margin: 0;
+    font-weight: 300;
+  }
+
+  /* ---------- Memory / bio panel ---------- */
+
+  .memory{
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    padding: 28px 26px 30px;
+    position: relative;
+  }
+
+  .memory-tag{
+    display: inline-block;
+    font-size: 11.5px;
+    color: var(--crystal);
+    border: 1px solid rgba(185,214,232,0.35);
+    padding: 3px 10px;
+    margin-bottom: 18px;
+    letter-spacing: 0.04em;
+  }
+
+  .memory p{
+    font-size: 15px;
+    line-height: 2.05;
+    color: var(--ink);
+    font-weight: 300;
+    margin: 0;
+    text-align: justify;
+  }
+
+  /* ---------- Footer ---------- */
+
+  .footer{
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .footer p{
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    margin: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="specks"></div>
+
+  <svg class="feather" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 4 C60 4 20 40 16 90 C13 128 30 170 58 196 C56 150 58 110 60 80 C62 110 64 150 62 196 C90 170 107 128 104 90 C100 40 60 4 60 4 Z"
+      fill="none" stroke="#EEF0F4" stroke-width="1" opacity="0.6"/>
+    <path d="M60 20 L60 190" stroke="#EEF0F4" stroke-width="0.6" opacity="0.4"/>
+  </svg>
+
+  <div class="wrap">
+
+    <div class="hero">
+      <p class="eyebrow">羽蚀纪 · 天空的悼亡曲</p >
+      <h1 class="name">李可依</h1>
+      <div class="divider">
+        <span class="line"></span>
+        <span class="dot"></span>
+        <span class="line"></span>
+      </div>
+      <p class="tagline">
+        <span>制作组成员</span><span>项目统筹</span><span>人工智能与工商管理</span>
+      </p >
+    </div>
+
+    <div class="portrait">
+      <div class="portrait-frame">
+        <img src="../images/photo3.jpg" alt="李可依">
+      </div>
+      <p class="portrait-cap">镜头之外,是另一种松弛感</p >
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">分工</h2>
+      <p class="section-sub">在制作组里主要承担的部分</p >
+
+      <div class="art-frame">
+        <img src="../images/program.jpg" alt="《羽蚀纪:天空的悼亡曲》项目美术图">
+        <p class="art-cap">《羽蚀纪:天空的悼亡曲》</p >
+      </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile-mark"></div>
+          <h3>项目计划</h3>
+          <p>梳理开发目标与阶段划分,制定时间线与里程碑节点,提前排查可能拖慢进度的风险点。</p >
+        </div>
+        <div class="tile">
+          <div class="tile-mark"></div>
+          <h3>项目统筹</h3>
+          <p>对接策划、美术、程序各条线,跟进任务进度,协调排期冲突,保证信息在组内同步。</p >
+        </div>
+        <div class="tile">
+          <div class="tile-mark"></div>
+          <h3>游戏测试</h3>
+          <p>设计测试用例,记录并跟踪问题,组织内部试玩收集反馈,推动修复形成闭环。</p >
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">记忆片段</h2>
+      <p class="section-sub">关于加入《羽蚀纪》的理由</p >
+      <div class="memory">
+        <span class="memory-tag">情报 · 加入原因</span>
+        <p>
+          大家好,我是李可依,人工智能与工商管理专业在读。在《羽蚀纪:天空的悼亡曲》这个项目里,我主要负责项目计划、组内统筹和游戏测试——把控制作进度,协调策划、美术、程序之间的沟通节奏,并在版本迭代阶段设计测试用例、跟踪问题、组织内部试玩收集反馈。最早决定加入这个项目,是因为很喜欢"羽蚀"这个世界观本身:一个被黑色星尘侵蚀、四大种族彼此猜忌的世界,主角作为没有翅膀却对污染天生免疫的"无羽者",要在坠落中找到自己的位置——这种设定让我很想知道故事会往哪里走,也很想参与到把它做出来的过程里。比起单一的技能产出,我更享受在项目里"把事情串起来"的工作:定节奏、盯进度、找问题,让团队里的每个人都能把精力放在真正重要的创作部分上。
+        </p >
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>羽蚀纪 制作组</p >
+    </div>
+
+    <a href="group.html" class="back-home">
+      ← 返回小组介绍
+    </a>
+
+  </div>
+</div>
+
+</body>
+</html>

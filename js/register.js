@@ -8,7 +8,7 @@ const message = document.getElementById("message");
 
 registerButton.addEventListener("click", function ()
 {
-    const username = usernameInput.value;
+    const username = usernameInput.value.trim();
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
 
@@ -50,5 +50,5 @@ backButton.addEventListener("click", function ()
 
 homeButton.addEventListener("click", function ()
 {
-    window.location.href = "index.html";
+    window.location.href = "../index.html";
 });

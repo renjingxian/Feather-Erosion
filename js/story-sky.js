@@ -4,7 +4,7 @@ const textDom = document.getElementById("textDom");
 const choiceDom = document.getElementById("choiceDom");
 const silhouetteDom = document.getElementById("silhouetteDom");
 
-/*打字机效果：逐字显示对白（与帝国线一致）*/
+/*打字机效果*/
 function typeText(element, text, speed)
 {
     element.textContent = "";
@@ -165,7 +165,7 @@ function render(){
 }
 
 document.addEventListener("keydown",function(e){
-    if(e.key === "Space" || e.key === "ArrowRight" || e.key === "Enter"){
+    if(e.key === " " || e.key === "ArrowRight" || e.key === "Enter"){
         e.preventDefault();
         if(e.repeat) return;
         if(cgDom.style.display !== "none") return;

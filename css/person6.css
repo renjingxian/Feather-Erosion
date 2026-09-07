@@ -1,0 +1,61 @@
+.profile-card {
+    width: min(900px, 100vw - 40px);
+}
+
+
+/* 照片和介绍左右排列 */
+.profile-top {
+    display: flex;
+    gap: 50px;
+    align-items: flex-start;
+}
+
+/* 个人照片 */
+.profile-photo {
+    width: 180px;
+    height: 240px;
+    object-fit: cover;
+    border: 1px solid var(--panel-border-strong);
+}
+
+/* 右侧信息 */
+.profile-info {
+    flex: 1;
+}
+
+.profile-role {
+    margin: 0 0 20px;
+    color: var(--gold);
+    letter-spacing: 2px;
+}
+
+/* 正文 */
+.profile-info p {
+    color: var(--text-dim);
+    text-align: justify;
+}
+
+/* 项目工作 */
+.profile-work {
+    padding-left: 22px;
+    color: var(--text-dim);
+}
+
+.profile-work li {
+    margin: 8px 0;
+}
+
+
+/* 手机端 */
+@media (max-width: 700px) {
+
+    .profile-top {
+        flex-direction: column;
+    }
+
+    .profile-photo {
+        width: 200px;
+        height: 267px;
+        margin: 0 auto;
+    }
+}
