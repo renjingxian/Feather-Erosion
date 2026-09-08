@@ -11,9 +11,9 @@ function typeText(element, text, speed)
     let i = 0;
     const timer = setInterval(function ()
     {
-        element.textContent += text[i];
-        i++;
-        if (i >= text.length) clearInterval(timer);
+      element.textContent += text[i];
+      i++;
+      if (i >= text.length) clearInterval(timer);
     }, speed);
 }
 
@@ -30,9 +30,9 @@ const nodes =
         {
             type:"choice",
             options:[
-                {label:"A1.出示【商人的信物】（伪造文书）",next:"a1"},
-                {label:"A2.硬闯",next:"a2"},
-                {label:"A3.说出真名：“我是艾德蒙长老之子。”",next:"a3"}
+              {label:"A1.出示【商人的信物】（伪造文书）",next:"a1"},
+              {label:"A2.硬闯",next:"a2"},
+              {label:"A3.说出真名：“我是艾德蒙长老之子。”",next:"a3"}
             ]
         }
     ],
@@ -59,9 +59,9 @@ const nodes =
         {
             type:"choice",
             options:[
-                {label:"保守秘密，假装没看见",next:"sel1"},
-                {label:"上前帮她矫正飞行姿势",next:"sel2"},
-                {label:"公开揭穿她的伪装",next:"sel3"}
+              {label:"保守秘密，假装没看见",next:"sel1"},
+              {label:"上前帮她矫正飞行姿势",next:"sel2"},
+              {label:"公开揭穿她的伪装",next:"sel3"}
             ]
         }
     ],
@@ -88,7 +88,7 @@ const nodes =
         {
             type:"choice",
             options:[
-                {label:"返回世界大地图",next:"backmap"}
+              {label:"返回世界大地图",next:"backmap"}
             ]
         }
     ]

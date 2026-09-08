@@ -33,10 +33,7 @@ function loadUsers()
 //保存用户
 function saveUsers(users)
 {
-    localStorage.setItem(
-        USERS_KEY,
-        JSON.stringify(users)
-    );
+    localStorage.setItem(USERS_KEY,JSON.stringify(users));
 }
 
 
@@ -45,7 +42,8 @@ function registerUser(username, password)
 {
     const users = loadUsers();
 
-    const exists = users.some(
+    const exists = users.some
+    (
         function (user)
         {
             return user.username === username;
@@ -85,12 +83,12 @@ function loginUser(username, password)
 {
     const users = loadUsers();
     const user = users.find
-        (
-            function (item)
-            {
-                return item.username === username;
-            }
-        );
+    (
+        function (item)
+        {
+            return item.username === username;
+        }
+    );
 
 
     if (!user)
@@ -110,12 +108,7 @@ function loginUser(username, password)
         };
     }
 
-
-    localStorage.setItem(
-        CURRENT_USER_KEY,
-        username
-    );
-
+    localStorage.setItem(CURRENT_USER_KEY,username);
 
     return {
         success: true,
@@ -123,20 +116,14 @@ function loginUser(username, password)
     };
 }
 
-
 //当前登录用户
 function getCurrentUser()
 {
-    return localStorage.getItem(
-        CURRENT_USER_KEY
-    );
+    return localStorage.getItem(CURRENT_USER_KEY);
 }
-
 
 //退出登录
 function logoutUser()
 {
-    localStorage.removeItem(
-        CURRENT_USER_KEY
-    );
+    localStorage.removeItem(CURRENT_USER_KEY);
 }

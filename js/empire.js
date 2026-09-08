@@ -11,9 +11,9 @@ function typeText(element, text, speed)
     let i = 0;
     const timer = setInterval(function ()
     {
-        element.textContent += text[i];
-        i++;
-        if (i >= text.length) clearInterval(timer);
+      element.textContent += text[i];
+      i++;
+      if (i >= text.length) clearInterval(timer);
     }, speed);
 }
 
