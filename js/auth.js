@@ -1,20 +1,12 @@
-const USERS_KEY =
-    "feather_erosion_users";
-
-const CURRENT_USER_KEY =
-    "feather_erosion_current_user";
-
+const USERS_KEY = "feather_erosion_users";
+const CURRENT_USER_KEY = "feather_erosion_current_user";
 
 //读取用户
 function loadUsers()
 {
     const raw = localStorage.getItem(USERS_KEY);
 
-
-    if (!raw)
-    {
-        return [];
-    }
+    if (!raw) return [];
 
     try
     {
@@ -23,8 +15,6 @@ function loadUsers()
 
     catch (error)
     {
-        console.error(error);
-
         return [];
     }
 }
@@ -89,7 +79,6 @@ function loginUser(username, password)
             return item.username === username;
         }
     );
-
 
     if (!user)
     {

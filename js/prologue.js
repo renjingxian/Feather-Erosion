@@ -3,30 +3,26 @@ const hint = document.getElementById("hint");
 const textDom = document.getElementById("textDom");
 const choiceDom = document.getElementById("choiceDom");
 const silhouetteDom = document.getElementById("silhouetteDom");
+const mode = new URLSearchParams(window.location.search).get("mode");
+const save = loadGame();
+const exitGameButton = document.getElementById("exit-game-button");
 
 /*打字机效果*/
 function typeText(element, text, speed)
 {
     element.textContent = "";
-
     let i = 0;
-
     var timer = setInterval(function ()
     {
         element.textContent += text[i];
-
         i++;
-
-        if (i >= text.length)
-        {
-            clearInterval(timer);
-        }
-
+        if (i >= text.length)clearInterval(timer);
     }, speed);
 }
 
 let isCgShowing = true;
 let isShowingChoice = false;
+let curIndex = 0;
 
 const storyScript = [
     {
@@ -59,14 +55,21 @@ const storyScript = [
         type:"choice",
         options:[
             {label:"我要回去，掀翻那些坐在云端的骗子。",tag:"sky"},
-            {label:"地面才是真实的，我要在这里建立新秩序。",tag:"ground"},
+            {label:"地面才是真实的，我要在这里建立新秩序。",tag:"empire"},
             {label:"我想去森林，那里没有谎言，只有回声。",tag:"forest"},
-            {label:"地底下藏着一切问题的答案。",tag:"underground"}
+            {label:"地底下藏着一切问题的答案。",tag:"under"}
         ]
     }
 ];
 
-let curIndex = 0;
+/*读取保存进度*/
+if (mode === "continue" )
+{
+  curIndex = save.index;
+  cgDom.style.display = "none";
+  isCgShowing = false;
+  renderCurrentLine();
+}
 
 cgDom.addEventListener("click",()=>{
     cgDom.style.display = "none";
@@ -82,6 +85,8 @@ function renderCurrentLine(){
     isShowingChoice = false;
     hint.textContent = "点击Enter/ Space/ ▸键 继续";
 
+    saveGame("prologue", "storyScript", curIndex);
+
     if(item.type === "narrator"){
         textDom.innerHTML = `<div class="scene">${item.text}</div>`;
         textDom.style.display = "block";
@@ -89,7 +94,9 @@ function renderCurrentLine(){
             silhouetteDom.style.backgroundImage = `url(${item.charImg})`;
             silhouetteDom.style.display = "block";
         }
-    }else if(item.type === "char"){
+    }
+
+    else if(item.type === "char"){
         const box = document.createElement("div");
         box.className = "dialog";
         const name = document.createElement("div");
@@ -107,7 +114,9 @@ function renderCurrentLine(){
             silhouetteDom.style.backgroundImage = `url(${item.charImg})`;
             silhouetteDom.style.display = "block";
         }
-    }else if(item.type === "choice"){
+    }
+    
+    else if(item.type === "choice"){
         textDom.style.display = "none";
         hint.textContent = "";
         choiceDom.innerHTML = "";
@@ -138,12 +147,12 @@ document.addEventListener("keydown",function(e){
 })
 
 function handlePick(tag){
-    localStorage.setItem("player_route", tag);
-    localStorage.setItem("item_bag", "1");
-    localStorage.setItem("item_merchant_map", "1");
-    localStorage.setItem("mem_fragment", "5");
-    localStorage.setItem("first_free_day", "1");
-    window.location.href = "map.html";
+    const pages = {sky: "story-sky.html",empire: "story-empire.html",forest: "story-forest.html",under: "story-under.html"};
+    window.location.href = pages[tag];
 }
 
-renderCurrentLine();
+/*退出游戏*/
+exitGameButton.addEventListener("click", function ()
+{
+    window.location.href = "mainmenu.html";
+});

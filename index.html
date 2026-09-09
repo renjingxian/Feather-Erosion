@@ -8,41 +8,133 @@
     <link rel="stylesheet" href="css/index.css">
 </head>
 <body class="main-bg">
-    <div class="page">
 
-        <!-- 游戏标题 -->
-        <div class="title-area">
-            <h1>羽蚀纪</h1>
-            <p>天空的悼亡曲</p>
-        </div>
+<div class="page">
 
-        <!-- 主页内容 -->
-        <div class="box box-wide">
-            <div class="introduce">
-                <h2>游戏简介</h2>
-                <p>我与我周旋久，宁做我</p>
-            </div>
-            
-
-            <h2>站点导航</h2>
-            <div class="nav">
-                <button id="register-button" class="menu-button">新玩家注册账号</button>
-                <button id="login-button" class="menu-button">已有账号，去登录</button>
-                <button id="developers-button" class="menu-button">小组与成员信息</button>
-            </div>
-
-            <div class = "tips">
-                <h2>使用说明</h2>
-                <p>1. 新用户请先注册账号</p>
-                <p>2. 注册完成后返回登录</p>
-                <p>3. 登录成功后开始游戏</p>
-            </div>
-            
-        </div>
-
+    <!-- 标题 -->
+    <div class="title-area">
+        <h1>羽蚀纪</h1>
+        <p>天空的悼亡曲</p>
     </div>
 
-    <script src="js/index.js"></script>
+    <!-- 首页主卡片 -->
+    <main class="box box-wide">
+
+        <!-- 游戏简介 -->
+        <section class="home-section">
+            <h2>游戏简介</h2>
+
+            <p class="game-description">
+                《羽蚀纪：天空的悼亡曲》是一款以天空文明与羽蚀危机为背景的
+                交互式剧情游戏。玩家将在不同阵营与人物之间做出选择，
+                并逐渐揭开这个世界隐藏的秘密。
+            </p>
+
+            <p class="game-slogan">我与我周旋久，宁做我</p>
+
+            <button class="btn-primary enter-game" onclick="location.href='html/login.html'">
+                进入游戏
+            </button>
+        </section>
+
+        <!-- 游戏特色 -->
+        <section class="home-section">
+            <h2>游戏特色</h2>
+
+            <div class="feature-list">
+
+                <div class="feature-item">
+                    <h3>多分支剧情</h3>
+                    <p>不同选择将推动剧情向不同方向发展。</p>
+                </div>
+
+                <div class="feature-item">
+                    <h3>命运选择</h3>
+                    <p>关键决定可能改变人物关系与最终结局。</p>
+                </div>
+
+                <div class="feature-item">
+                    <h3>角色互动</h3>
+                    <p>认识不同阵营与立场的人物，探索他们的故事。</p>
+                </div>
+
+                <div class="feature-item">
+                    <h3>多样玩法</h3>
+                    <p>剧情中穿插选择、CG、小游戏与成就等内容。</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 世界一览 -->
+        <section class="home-section">
+            <h2>世界一览</h2>
+
+            <p class="game-description">
+                “羽蚀”正在侵蚀这个世界。四个文明彼此猜忌，
+                却又不得不共同面对逐渐逼近的危机。
+            </p>
+
+            <div class="feature-list">
+
+                <div class="world-item">
+                    <h3>天空之城</h3>
+                    <p>悬浮于云海之上的羽人文明。</p>
+                </div>
+
+                <div class="world-item">
+                    <h3>帝国城邦</h3>
+                    <p>蒸汽与符文科技交织的人类城邦。</p>
+                </div>
+
+                <div class="world-item">
+                    <h3>精灵之森</h3>
+                    <p>由古树与生命魔法守护的森林国度。</p>
+                </div>
+
+                <div class="world-item">
+                    <h3>地下古堡</h3>
+                    <p>隐藏于地下的机械与炼金文明。</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 站点导航 -->
+        <section class="home-section">
+            <h2>站点导航</h2>
+
+            <ul class="nav">
+                <li>
+                    <a href="html/register.html">
+                        新玩家注册账号
+                    </a>
+                </li>
+
+                <li>
+                    <a href="html/login.html">
+                        已有账号，去登录
+                    </a>
+                </li>
+
+                <li>
+                    <a href="html/group.html">
+                        小组与成员信息
+                    </a>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- 使用说明 -->
+        <section class="tips">
+            <h2>使用说明</h2>
+            <p>1. 新用户请先注册账号</p>
+            <p>2. 注册完成后返回登录</p>
+            <p>3. 登录成功后开始游戏</p>
+        </section>
+    </main>
+</div>
 
 </body>
 </html>

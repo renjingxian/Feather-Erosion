@@ -3,6 +3,9 @@ const hint = document.getElementById("hint");
 const textDom = document.getElementById("textDom");
 const choiceDom = document.getElementById("choiceDom");
 const silhouetteDom = document.getElementById("silhouetteDom");
+const mode = new URLSearchParams(window.location.search).get("mode");
+const save = loadGame();
+const exitGameButton = document.getElementById("exit-game-button");
 
 /*打字机效果*/
 function typeText(element, text, speed)
@@ -19,6 +22,7 @@ function typeText(element, text, speed)
 
 /*当前剧情节点*/
 let currentNode = "start";
+let pos = 0;
 
 const nodes =
 {
@@ -936,9 +940,16 @@ const nodes =
   ]
 };
 
+/*读取保存进度*/
+if (mode === "continue" )
+{
+  currentNode = save.node;
+  pos = save.index;
+  cgDom.style.display = "none";
+}
+
 /*当前节点数据*/
 let nodeData = nodes[currentNode];
-let pos = 0;
 
 /*剧情渲染*/
 function render()
@@ -955,6 +966,8 @@ function render()
     render();
     return;
   }
+
+  saveGame("empire", currentNode, pos);
 
   /* 每次渲染前先隐藏旧内容 */
   choiceDom.style.display = "none";
@@ -1073,3 +1086,9 @@ if (cgDom)
 
 /*第一次渲染*/
 render();
+
+/*退出游戏*/
+exitGameButton.addEventListener("click", function ()
+{
+    window.location.href = "mainmenu.html";
+});

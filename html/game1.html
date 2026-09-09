@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>风脉回廊｜晶体挖掘小游戏</title>
+<link rel="stylesheet" href="../css/common.css" />
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+  }
+  #gameWrap {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: url("../images/矿工背景.jpg") no-repeat center center;
+    background-size: cover;
+    cursor: pointer;
+  }
+  #startPanel,
+  #endPanel {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+  #startPanel h1 {
+    font-size: 34px;
+    margin-bottom: 12px;
+  }
+  #startPanel p,
+  #endPanel p {
+    font-size: 18px;
+    margin-bottom: 24px;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+  #startBtn,
+  #backMapBtn {
+    padding: 12px 28px;
+    font-size: 20px;
+    background: #ffd447;
+    color: #222;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #hud {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    z-index: 30;
+    display: flex;
+    gap: 12px;
+  }
+  .hud-box {
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 18px;
+    user-select: none;
+  }
+  #backBtn {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    z-index: 30;
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    user-select: none;
+  }
+  #hookPivot {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin-left: -12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #333;
+    border-radius: 50%;
+    z-index: 10;
+  }
+  #chain {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    width: 3px;
+    transform-origin: top center;
+    z-index: 11;
+  }
+  #hook {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #f0f0f0, #9a9a9a 60%, #444);
+    border: 2px solid #222;
+    z-index: 12;
+    pointer-events: none;
+  }
+  #hook::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 9px;
+    width: 2px;
+    height: 16px;
+    background: #333;
+    transform: translateX(-50%);
+  }
+  #hook::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 24px;
+    width: 12px;
+    height: 7px;
+    border: 2px solid #333;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    transform: translateX(-50%);
+  }
+  .item {
+    position: absolute;
+    z-index: 5;
+    user-select: none;
+  }
+/*蓝色风晶 ore‑1  +1*/
+.ore-1 {
+  width: 36px;
+  height: 36px;
+  background:#2788ff;
+  box-shadow:
+  0px -12px 0 #53a8ff,
+  4px -8px 0 #53a8ff,
+  -4px -8px 0 #1466dd,
+  8px -4px 0 #53a8ff,
+  -8px -4px 0 #1466dd,
+  12px 0px 0 #53a8ff,
+  -12px 0px 0 #1466dd,
+  8px 4px 0 #1466dd,
+  -8px 4px 0 #53a8ff,
+  4px 8px 0 #1466dd,
+  -4px 8px 0 #53a8ff,
+  0px 12px 0 #1466dd,
+  inset 6px -4px 0 #82c0ff,
+  inset -6px 2px 0 #0f52bb;
+  border-radius: 2px;
+}
+/*翠绿高阶风晶 ore‑2 +3*/
+.ore-2 {
+  width:48px;
+  height:48px;
+  background:#00b878;
+  box-shadow:
+  0px -16px 0 #42e8b0,
+  6px -12px 0 #42e8b0,
+  -6px -12px 0 #008858,
+  12px -8px 0 #42e8b0,
+  -12px -8px 0 #008858,
+  16px 0px 0 #42e8b0,
+  -16px 0px 0 #008858,
+  12px 8px 0 #008858,
+  -12px 8px 0 #42e8b0,
+  6px 12px 0 #008858,
+  -6px 12px 0 #42e8b0,
+  0px 16px 0 #008858,
+  inset 8px -6px 0 #89ffd6,
+  inset -8px 4px 0 #006340;
+  border-radius:2px;
+}
+/*钻石diamond +5分，像素菱形钻石*/
+.diamond {
+  width:42px;
+  height:42px;
+  background:#b8e8ff;
+  box-shadow:
+  0px -14px 0 #ffffff,
+  7px -9px 0 #e0f4ff,
+  -7px -9px 0 #72bfff,
+  11px -3px 0 #ffffff,
+  -11px -3px 0 #4098e6,
+  14px 3px 0 #e0f4ff,
+  -14px 3px 0 #3078c2,
+  8px 10px 0 #4098e6,
+  -8px 10px 0 #ffffff,
+  0px 14px 0 #205890,
+  inset 5px -5px 0 #ffffff,
+  inset -5px 3px 0 #2868aa;
+  border-radius: 2px;
+}
+/*像素石头 stone -2分*/
+.stone {
+  width:52px;
+  height:52px;
+  background:#707070;
+  box-shadow:
+  -10px -6px 0 #8c8c8c,
+  8px -8px 0 #555555,
+  -14px 2px 0 #5a5a5a,
+  12px -2px 0 #949494,
+  -6px 10px 0 #474747,
+  10px 8px 0 #7c7c7c,
+  2px 14px 0 #404040,
+  -8px -2px 0 #a0a0a0,
+  4px -10px 0 #616161,
+  -4px 6px 0 #868686;
+  border-radius:4px 8px 6px 10px;
+}
+  .tip-text {
+    position: absolute;
+    z-index: 25;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 4px #000;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+<div id="gameWrap">
+  <div id="startPanel">
+    <h1>风晶挖掘挑战</h1>
+    <p>
+      点击画面发射抓钩。<br />
+      蓝色风晶 <b>+1</b>，翠绿风晶 <b>+3</b>，钻石 <b>+5</b>，灰色石头 <b>-2</b>。<br />
+      目标：<b>30 秒内拿到 15 分</b>。
+    </p>
+    <button id="startBtn">开始游戏</button>
+  </div>
+  <div id="endPanel" style="display:none;">
+    <h1 id="endTitle">挑战结束</h1>
+    <p id="endText"></p>
+    <button id="backMapBtn">返回地图</button>
+  </div>
+  <div id="hud" style="display:none;">
+    <div class="hud-box">得分：<span id="scoreText">0</span></div>
+    <div class="hud-box">时间：<span id="timeText">30</span>s</div>
+    <div class="hud-box">目标：15分</div>
+  </div>
+  <a id="backBtn" href="map-sky.html" style="display:none;">返回地图</a>
+  <div id="hookPivot"></div>
+  <div id="chain"></div>
+  <div id="hook"></div>
+</div>
+<script>
+(function () {
+  const gameWrap = document.getElementById("gameWrap");
+  const startPanel = document.getElementById("startPanel");
+  const endPanel = document.getElementById("endPanel");
+  const endTitle = document.getElementById("endTitle");
+  const endText = document.getElementById("endText");
+  const hud = document.getElementById("hud");
+  const scoreText = document.getElementById("scoreText");
+  const timeText = document.getElementById("timeText");
+  const backBtn = document.getElementById("backBtn");
+  const startBtn = document.getElementById("startBtn");
+  const backMapBtn = document.getElementById("backMapBtn");
+  const chain = document.getElementById("chain");
+  const hook = document.getElementById("hook");
+  const config = {
+    swingSpeed: 0.018,
+    swingRange: 1.35,
+    extendSpeed: 11,
+    retractSpeed: 8,
+    fastRetractSpeed: 15,
+    gameTime: 30,
+    targetScore: 15,
+    itemCount: {
+      ore1: 5,
+      ore2: 3,
+      diamond:2,
+      stone: 4
+    }
+  };
+  let score = 0;
+  let timeLeft = config.gameTime;
+  let angle = 0;
+  let angleDir = 1;
+  let fireAngle = 0;
+  let chainLength = 110;
+  let state = "idle";
+  let target = null;
+  let items = [];
+  let timer = null;
+  let rafId = null;
+  function updateScore() {
+    scoreText.textContent = score;
+  }
+  function showTip(x, y, text) {
+    const tip = document.createElement("div");
+    tip.className = "tip-text";
+    tip.textContent = text;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+    gameWrap.appendChild(tip);
+    setTimeout(function () {
+      tip.remove();
+    }, 900);
+  }
+  function spawnOneItem(){
+    const typeList = ["ore-1","ore-1","ore-2","diamond","stone","stone"];
+    const randType = typeList[Math.floor(Math.random()*typeList.length)];
+    const dom = document.createElement("div");
+    dom.className = "item " + randType;
+    const wrapW = gameWrap.clientWidth;
+    const wrapH = gameWrap.clientHeight;
+    const mineTop = Math.floor(wrapH * 0.25);
+    const bottomMargin = 70;
+    const maxX = wrapW - 80;
+    const x = 40 + Math.random() * maxX;
+    const y = mineTop + Math.random() * (wrapH - mineTop - bottomMargin);
+    dom.style.left = x + "px";
+    dom.style.top = y + "px";
+    gameWrap.appendChild(dom);
+    let val = 0;
+    if(randType==="ore-1") val=1;
+    else if(randType==="ore-2") val=3;
+    else if(randType==="diamond") val=5;
+    else if(randType==="stone") val=-2;
+    items.push({
+      dom: dom,
+      type: randType,
+      val: val,
+      x: x,
+      y: y,
+      width: dom.offsetWidth,
+      height: dom.offsetHeight
+    });
+  }
+  function createItems() {
+    items.forEach(function (item) {
+      if (item.dom) {
+        item.dom.remove();
+      }
+    });
+    items = [];
+    for(let i=0;i<config.itemCount.ore1;i++) spawnOneItem();
+    for(let i=0;i<config.itemCount.ore2;i++) spawnOneItem();
+    for(let i=0;i<config.itemCount.diamond;i++) spawnOneItem();
+    for(let i=0;i<config.itemCount.stone;i++) spawnOneItem();
+  }
+  function getItemRect(item) {
+    return {
+      left: item.x,
+      right: item.x + item.width,
+      top: item.y,
+      bottom: item.y + item.height
+    };
+  }
+  function getHookRect() {
+    const rect = hook.getBoundingClientRect();
+    const wrapRect = gameWrap.getBoundingClientRect();
+    return {
+      left: rect.left - wrapRect.left,
+      right: rect.right - wrapRect.left,
+      top: rect.top - wrapRect.top,
+      bottom: rect.bottom - wrapRect.top
+    };
+  }
+  function rectsHit(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+  function checkHit() {
+    const hookRect = getHookRect();
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (rectsHit(hookRect, getItemRect(item))) {
+        return item;
+      }
+    }
+    return null;
+  }
+  function updateHook(drawAngle) {
+    const wrapW = gameWrap.clientWidth;
+    const pivotX = wrapW / 2;
+    const pivotY = 24;
+    chain.style.height = chainLength + "px";
+    chain.style.transform = "rotate(" + drawAngle + "rad)";
+    const hookX = pivotX + Math.sin(drawAngle) * chainLength;
+    const hookY = pivotY + Math.cos(drawAngle) * chainLength;
+    hook.style.left = (hookX - 14) + "px";
+    hook.style.top = (hookY - 14) + "px";
+    if (target) {
+      target.x = hookX - target.width / 2;
+      target.y = hookY - target.height / 2;
+      target.dom.style.left = target.x + "px";
+      target.dom.style.top = target.y + "px";
+    }
+  }
+  function releaseTarget() {
+    if (!target) return;
+    score += target.val;
+    updateScore();
+    const text = target.val > 0 ? "+" + target.val : target.val;
+    showTip(target.x + target.width / 2, target.y, text);
+    target.dom.remove();
+    items = items.filter(function (it) {
+      return it !== target;
+    });
+    target = null;
+    spawnOneItem();
+  }
+  function endGame() {
+    cancelAnimationFrame(rafId);
+    clearInterval(timer);
+    state = "idle";
+    if (score >= config.targetScore) {
+      endTitle.textContent = "挑战成功！";
+      endText.textContent = "你在 " + config.gameTime + " 秒内拿到了 " + score + " 分，可以返回地图领取奖励。";
+    } else {
+      endTitle.textContent = "挑战失败";
+      endText.textContent = "最终得分 " + score + "，目标 " + config.targetScore + " 分。再试一次吧！";
+    }
+    endPanel.style.display = "flex";
+  }
+  function loop() {
+    const wrapH = gameWrap.clientHeight;
+    if (state === "swing") {
+      angle += config.swingSpeed * angleDir;
+      if (angle > config.swingRange) {
+        angle = config.swingRange;
+        angleDir = -1;
+      } else if (angle < -config.swingRange) {
+        angle = -config.swingRange;
+        angleDir = 1;
+      }
+      updateHook(angle);
+    }
+    if (state === "extend") {
+      chainLength += config.extendSpeed;
+      updateHook(fireAngle);
+      if (!target) {
+        const hit = checkHit();
+        if (hit) {
+          target = hit;
+          state = "retract";
+        }
+      }
+      if (chainLength >= wrapH * 1.15) {
+        state = "retract";
+      }
+    }
+    if (state === "retract") {
+      const speed = target ? config.retractSpeed : config.fastRetractSpeed;
+      chainLength -= speed;
+      updateHook(fireAngle);
+      if (chainLength <= 110) {
+        chainLength = 110;
+        if (target) {
+          releaseTarget();
+        }
+        if (score >= config.targetScore) {
+          endGame();
+          return;
+        }
+        state = "swing";
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+  function fire() {
+    if (state !== "swing") return;
+    fireAngle = angle;
+    state = "extend";
+  }
+  function startGame() {
+    score = 0;
+    timeLeft = config.gameTime;
+    angle = 0;
+    angleDir = 1;
+    chainLength = 110;
+    target = null;
+    updateScore();
+    timeText.textContent = timeLeft;
+    startPanel.style.display = "none";
+    endPanel.style.display = "none";
+    hud.style.display = "flex";
+    backBtn.style.display = "block";
+    createItems();
+    state = "swing";
+    loop();
+    clearInterval(timer);
+    timer = setInterval(function () {
+      timeLeft--;
+      timeText.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        endGame();
+      }
+    }, 1000);
+  }
+  startBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    startGame();
+  });
+  backMapBtn.addEventListener("click", function () {
+    window.location.href = "map-sky.html";
+  });
+  gameWrap.addEventListener("click", function (e) {
+    if (state !== "swing") return;
+    if (e.target.closest("#startPanel")) return;
+    if (e.target.closest("#endPanel")) return;
+    if (e.target.id === "backBtn") return;
+    fire();
+  });
+  window.addEventListener("resize", function () {
+    if (state === "swing" || state === "idle") {
+      createItems();
+    }
+  });
+})();
+</script>
+</body>
+</html>

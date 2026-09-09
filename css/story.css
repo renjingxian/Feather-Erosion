@@ -40,7 +40,7 @@
 .char-silhouette-wrap {
     position: absolute;
     bottom: 80px;
-    left: 0;
+    left: 500px;
     width: 100%;
     height: 65%;
     display: flex;
@@ -50,7 +50,8 @@
 }
 
 .char-silhouette {
-    height: 85%;
+    width: 30%;
+    height: 70%;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center bottom;
@@ -130,8 +131,7 @@
     color: var(--gold);
 }
 
-.speaker::before,
-.speaker::after {
+.speaker::before,.speaker::after {
     content: "◆";
     margin: 0 10px;
     font-size: 9px;
@@ -202,6 +202,29 @@
 
 .story-box ul li {
     margin: 6px 0;
+}
+
+.exit-game-button
+{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+
+    padding: 8px 16px;
+
+    color: var(--text);
+    background: rgba(15, 19, 24, 0.75);
+
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.exit-game-button:hover
+{
+    background: rgba(30, 35, 42, 0.9);
 }
 
 /* 响应式 */
