@@ -6,18 +6,36 @@ const silhouetteDom = document.getElementById("silhouetteDom");
 const mode = new URLSearchParams(window.location.search).get("mode");
 const save = loadGame();
 const exitGameButton = document.getElementById("exit-game-button");
+let istyping = false;
+let timer = null;
+let currentElement = null;
+let currentText = "";
+let cannext = true;
 
 /*打字机效果*/
 function typeText(element, text, speed)
 {
-    element.textContent = "";
-    let i = 0;
-    const timer = setInterval(function ()
+  istyping=true;
+  cannext=false;
+  element.textContent = "";
+  let i = 0;
+  currentElement=element;
+  currentText=text;
+  timer = setInterval(function ()
+  {
+    element.textContent += text[i];
+    i++;
+    if (i >= text.length) 
     {
-      element.textContent += text[i];
-      i++;
-      if (i >= text.length) clearInterval(timer);
-    }, speed);
+      clearInterval(timer);
+      timer=null;
+      istyping=false;
+      setTimeout(function ()
+      {
+        cannext = true;
+      }, 300);
+    }
+  }, speed);
 }
 
 /*当前剧情节点*/
@@ -1069,6 +1087,19 @@ document.addEventListener("keydown",function (e)
     if (e.repeat) return;//防止长按连续触发
     if (cgDom && cgDom.style.display !== "none") return;//CG 还没有关闭时不能推进
     if (choiceDom.style.display === "block") return;//正在选择时不能通过 Enter 跳过
+    if (istyping)
+    {
+      currentElement.textContent=currentText;
+      clearInterval(timer);
+      timer=null;
+      istyping=false;
+      setTimeout(function ()
+      {
+        cannext = true;
+      }, 300);
+      return;
+    }
+    if (!cannext) return;
     pos++;
     render();
   }
@@ -1086,9 +1117,3 @@ if (cgDom)
 
 /*第一次渲染*/
 render();
-
-/*退出游戏*/
-exitGameButton.addEventListener("click", function ()
-{
-    window.location.href = "mainmenu.html";
-});

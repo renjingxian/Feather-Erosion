@@ -6,18 +6,36 @@ const silhouetteDom = document.getElementById("silhouetteDom");
 const mode = new URLSearchParams(window.location.search).get("mode");
 const save = loadGame();
 const exitGameButton = document.getElementById("exit-game-button");
+let istyping = false;
+let timer = null;
+let currentElement = null;
+let currentText = "";
+let cannext = true;
 
 /*打字机效果*/
 function typeText(element, text, speed)
 {
-    element.textContent = "";
-    let i = 0;
-    var timer = setInterval(function ()
+  istyping=true;
+  cannext=false;
+  element.textContent = "";
+  let i = 0;
+  currentElement=element;
+  currentText=text;
+  timer = setInterval(function ()
+  {
+    element.textContent += text[i];
+    i++;
+    if (i >= text.length) 
     {
-        element.textContent += text[i];
-        i++;
-        if (i >= text.length)clearInterval(timer);
-    }, speed);
+      clearInterval(timer);
+      timer=null;
+      istyping=false;
+      setTimeout(function ()
+      {
+        cannext = true;
+      }, 300);
+    }
+  }, speed);
 }
 
 let isCgShowing = true;
@@ -26,38 +44,88 @@ let curIndex = 0;
 
 const storyScript = [
     {
-        type:"narrator",
-        text:"羽人出生时，第一声啼哭会震动云层。我出生时，接生婆沉默了很久。母亲说：“他没有翅膀，但他有一双能看穿所有谎言的眼睛。”二十年后，那场从天空坠落的黑雨证明了她的话。谎言？不。是整个天空都在撒谎。",
+        type:"char",
+        speaker:"内心独白",
+        text:"在羽族的传说中，第一代羽人因为渴望天空的拥抱，才生出羽翼飞翔。但美丽而包容的天空啊，请你告诉我，为什么没有翅膀的人会坠落。",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"内心独白",
+        text:"那一天，渴望天空拥抱的我被他们从塔顶推了下来，坠落的瞬间，仿佛我也学会了飞翔。如果死前是这样的风声，这就是天空给我的答案吗？",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"我",
+        text:"咳...咳..咳",
         charImg:""
     },
     {
         type:"narrator",
-        text:"我重重砸进泥泞的地面，浑身淌着血。昏沉之间，一只戴着黑色手套的手，朝我伸了过来。",
+        text:"我用了很长一段时间，才确认自己还活着。首先涌上来的，是身体里那股挥之不去的铁锈味，然后是雨后泥土混着青草地的味道，最后是天空和阳光刺激我眼膜的感受。",
+        charImg:""
+    },
+    {
+        type:"narrator",
+        text:"那是我第一次离开天空，却真实的感受到了活着的滋味。",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"我",
+        text:"好难受，但我居然还活着。",
         charImg:""
     },
     {
         type:"char",
         speaker:"神秘商人",
-        text:"醒来吧，无翼者。你有三天时间决定——是成为救世主，还是成为下一块结晶。",
-        charImg:"../images/silhouette_merchant.png"
-    },
-    {
-        type:"narrator",
-        text:"你得到一件破旧的行囊，一张商人递来的旧地图，还有五片零碎的记忆碎片。前路的一切，从这一刻开始铺开。",
+        text:"不错啊，居然还活着。",
         charImg:""
     },
     {
-        type:"narrator",
-        text:"商人站在一旁，安静等待你的答复。你要选择接下来要走的道路。",
-        charImg:"../images/silhouette_merchant.png"
+        type:"char",
+        speaker:"我",
+        text:"你......是谁？",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"神秘商人",
+        text:"这个问题很重要吗？比起这个，你难道不想知道‘你是谁’吗？",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"我",
+        text:"......",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"神秘商人",
+        text:"这个世界线不久后就将毁灭，你是唯一能拯救它的人......很奇怪，那些羽蚀似乎并不会伤害你......",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"神秘商人",
+        text:"不过这都是后话了，为了保全这条世界线，我可做了不少努力才找到你，不过我并不是强买强卖的主，我更喜欢看你们自己选择未来。",
+        charImg:""
+    },
+    {
+        type:"char",
+        speaker:"神秘商人",
+        text:"所以，‘无翼者’，现在你有一天时间来探索这片你从未来过的大陆，不过在这之前，请告诉我，你更倾向于去往哪里呢？",
+        charImg:""
     },
     {
         type:"choice",
         options:[
-            {label:"我要回去，掀翻那些坐在云端的骗子。",tag:"sky"},
-            {label:"地面才是真实的，我要在这里建立新秩序。",tag:"empire"},
-            {label:"我想去森林，那里没有谎言，只有回声。",tag:"forest"},
-            {label:"地底下藏着一切问题的答案。",tag:"under"}
+            {label:"天空，你是否知晓一切？",tag:"sky"},
+            {label:"我现在所站立的地面才是真实，我将在这废墟之上建立新的秩序。",tag:"empire"},
+            {label:"听说东方有森林，那里没有谎言，只有回声。",tag:"forest"},
+            {label:"泥土之下，埋藏着一切的答案。",tag:"under"}
         ]
     }
 ];
@@ -132,19 +200,32 @@ function renderCurrentLine(){
     }
 }
 
-document.addEventListener("keydown",function(e){
-    if(e.key === " " || e.key === "ArrowRight" || e.key === "Enter"){
-        e.preventDefault();
-        if(e.repeat) return;
-        if(isCgShowing) return;
-        if(isShowingChoice) return;
-        curIndex++;
-        if(curIndex >= storyScript.length){
-            return;
-        }
-        renderCurrentLine();
+/*键盘推进剧情*/
+document.addEventListener("keydown",function (e)
+{
+  if (e.key === " "||e.key === "ArrowRight"||e.key === "Enter")
+  {
+    e.preventDefault();
+    if (e.repeat) return;//防止长按连续触发
+    if (cgDom && cgDom.style.display !== "none") return;//CG 还没有关闭时不能推进
+    if (choiceDom.style.display === "block") return;//正在选择时不能通过 Enter 跳过
+    if (istyping)
+    {
+      currentElement.textContent=currentText;
+      clearInterval(timer);
+      timer=null;
+      istyping=false;
+      setTimeout(function ()
+      {
+        cannext = true;
+      }, 300);
+      return;
     }
-})
+    if (!cannext) return;
+    curIndex++;
+    renderCurrentLine();
+  }
+});
 
 function handlePick(tag){
     const pages = {sky: "story-sky.html",empire: "story-empire.html",forest: "story-forest.html",under: "story-under.html"};
