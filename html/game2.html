@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽蚀纪｜记忆羽毛接球小游戏</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #gameWrap {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: url("../images/game2background.jpg") no-repeat center center;
+            background-size: cover;
+        }
+
+        #rainLayer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 8;
+            display: none;
+            background: linear-gradient(180deg, rgba(120,160,255,0.35), rgba(60,90,180,0.25));
+        }
+
+        .rain-line {
+            position: absolute;
+            width: 2px;
+            height: 14px;
+            background: linear-gradient(180deg, rgba(180,210,255,0), rgba(180,210,255,0.9));
+            animation: rain 0.45s linear infinite;
+        }
+
+        @keyframes rain {
+            0% { transform: translateY(-20px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: transparent;
+        }
+
+        .ui-panel {
+            position: absolute;
+            z-index: 10;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .score-text {
+            top: 20px;
+            left: 20px;
+            font-size: 22px;
+        }
+
+        .time-text {
+            top: 55px;
+            left: 20px;
+            font-size: 22px;
+        }
+
+        .tip-text {
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+        }
+
+        .event-text {
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 44px;
+            color: #ff6b6b;
+            text-shadow: 3px 3px 0 #222, 0 0 18px rgba(255,107,107,0.8);
+            z-index: 16;
+            display: none;
+            letter-spacing: 4px;
+        }
+
+        .pause-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 3px 3px 6px #000;
+            z-index: 15;
+            display: none;
+        }
+
+        .start-modal,
+        .end-modal {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: rgba(255, 255, 255, 0.88);
+            padding: 32px 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #222;
+        }
+
+        .modal-box h2 {
+            margin-bottom: 16px;
+        }
+
+        .modal-box p {
+            margin-bottom: 20px;
+            font-size: 17px;
+        }
+
+        .modal-box button {
+            padding: 10px 24px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameWrap">
+        <div id="rainLayer"></div>
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="ui-panel score-text">
+            收集羽毛：<span id="featherCount">0</span>
+        </div>
+        <div class="ui-panel time-text">
+            剩余时间：<span id="timeText">30</span>s
+        </div>
+        <div class="ui-panel tip-text">
+            A / D 移动挡板 | 空格键暂停/继续
+        </div>
+        <div class="ui-panel event-text" id="eventText">暴雨突袭！羽毛 -10</div>
+        <div class="ui-panel pause-tip" id="pauseTip">游戏暂停</div>
+
+        <div class="start-modal" id="startModal">
+            <div class="modal-box">
+                <h2>记忆羽毛</h2>
+                <p>移动挡板接住飘落的记忆羽毛<br>游戏结束后，羽毛数量将兑换为风晶碎片</p>
+                <button id="startBtn">开始游戏</button>
+            </div>
+        </div>
+
+        <div class="end-modal hide" id="endModal">
+            <div class="modal-box">
+                <h2>游戏结束</h2>
+                <p>
+                    本次收集羽毛：<span id="finalFeather">0</span> 个<br>
+                    获得风晶碎片 × <span id="crystalGet">0</span>
+                </p>
+                <button id="backMapBtn">返回地图</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="gameBgm" loop preload="auto">
+        <source src="../audios/game2.m4a" type="audio/mpeg">
+    </audio>
+
+    <script src="saveTool.js"></script>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const rainLayer = document.getElementById("rainLayer");
+        const eventText = document.getElementById("eventText");
+        const mode = new URLSearchParams(window.location.search).get("mode");
+        const cnt = new URLSearchParams(window.location.search).get("cnt");
+        let time = new URLSearchParams(window.location.search).get("time");
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        // 挡板
+        const board = {
+            w: 130,
+            h: 28,
+            x: 0,
+            y: 0,
+            speed: 9
+        };
+
+        // 游戏状态
+        let featherList = [];
+        let featherNum = 0;
+        let gameTime = 30;
+        let isGameRunning = false;
+        let isPaused = false;
+        let timer = null;
+        let spawnTimer = null;
+        let eventTimer = null;
+        let rainTriggered = false;
+
+        // 键盘监听 A D 控制 + 空格暂停
+        const key = {
+            left: false,
+            right: false
+        };
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "a" || e.key === "A") {
+                key.left = true;
+            }
+            if (e.key === "d" || e.key === "D") {
+                key.right = true;
+            }
+            if (e.code === "Space" && isGameRunning) {
+                e.preventDefault();
+                isPaused = !isPaused;
+                document.getElementById("pauseTip").style.display = isPaused ? "block" : "none";
+            }
+        });
+
+        document.addEventListener("keyup", e => {
+            if (e.key === "a" || e.key === "A") {
+                key.left = false;
+            }
+            if (e.key === "d" || e.key === "D") {
+                key.right = false;
+            }
+        });
+
+        // 创建羽毛
+        function createFeather() {
+            return {
+                x: Math.random() * (canvas.width - 32),
+                y: -48,
+                w: 32,
+                h: 48,
+                fallSpeed: 2 + Math.random() * 2
+            };
+        }
+
+        // 细长羽毛绘制
+        function drawFeather(x, y, w, h) {
+            ctx.save();
+            ctx.translate(x + w / 2, y + h / 2);
+
+            // 羽毛主体
+            ctx.fillStyle = "#f4f4ff";
+            ctx.beginPath();
+            ctx.moveTo(0, -h / 2);
+            ctx.quadraticCurveTo(w / 2, -h / 4, w / 4, h / 4);
+            ctx.quadraticCurveTo(0, h / 2, -w / 4, h / 4);
+            ctx.quadraticCurveTo(-w / 2, -h / 4, 0, -h / 2);
+            ctx.fill();
+
+            // 外轮廓
+            ctx.strokeStyle = "#c7c7e8";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -h / 2);
+            ctx.quadraticCurveTo(w / 2, -h / 4, w / 4, h / 4);
+            ctx.quadraticCurveTo(0, h / 2, -w / 4, h / 4);
+            ctx.quadraticCurveTo(-w / 2, -h / 4, 0, -h / 2);
+            ctx.stroke();
+
+            // 中轴
+            ctx.strokeStyle = "#9f9fd1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, -h / 2);
+            ctx.lineTo(0, h / 2);
+            ctx.stroke();
+
+            // 内部斜纹
+            ctx.strokeStyle = "#d8d8f2";
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 4; i++) {
+                const yy = -h / 2 + (h / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(-7, yy);
+                ctx.lineTo(7, yy + 3);
+                ctx.stroke();
+            }
+
+            // 羽梢高光
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.ellipse(-4, -h / 2 + 6, 3, 1.5, -0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // 绘制挡板
+        function drawBoard(x, y, w, h) {
+            ctx.fillStyle = "#7098dd";
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = "#b0ccff";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+        }
+
+        // 生成雨滴
+        function createRain() {
+            rainLayer.innerHTML = "";
+            for (let i = 0; i < 90; i++) {
+                const line = document.createElement("div");
+                line.className = "rain-line";
+                line.style.left = Math.random() * 100 + "vw";
+                line.style.top = Math.random() * 100 + "vh";
+                line.style.animationDuration = (0.35 + Math.random() * 0.25) + "s";
+                rainLayer.appendChild(line);
+            }
+        }
+
+        // 触发暴雨事件
+        function triggerRainEvent() {
+            if (rainTriggered || !isGameRunning || isPaused) return;
+            rainTriggered = true;
+
+            featherNum = Math.max(0, featherNum - 10);
+            document.getElementById("featherCount").innerText = featherNum;
+
+            eventText.style.display = "block";
+            rainLayer.style.display = "block";
+            createRain();
+
+            setTimeout(() => {
+                eventText.style.display = "none";
+                rainLayer.style.display = "none";
+                rainLayer.innerHTML = "";
+            }, 2400);
+        }
+
+        // 游戏主循环
+        function gameLoop() {
+            if (!isGameRunning) return;
+            requestAnimationFrame(gameLoop);
+            if (isPaused) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 挡板位置更新
+            if (key.left) board.x -= board.speed;
+            if (key.right) board.x += board.speed;
+
+            // 边界限制
+            if (board.x < 0) board.x = 0;
+            if (board.x + board.w > canvas.width) {
+                board.x = canvas.width - board.w;
+            }
+            board.y = canvas.height - 40;
+
+            // 更新羽毛
+            for (let i = featherList.length - 1; i >= 0; i--) {
+                const f = featherList[i];
+                f.y += f.fallSpeed;
+
+                // 碰撞检测
+                if (
+                    f.y + f.h >= board.y &&
+                    f.x + f.w >= board.x &&
+                    f.x <= board.x + board.w
+                ) {
+                    featherNum++;
+                    document.getElementById("featherCount").innerText = featherNum;
+                    featherList.splice(i, 1);
+                    continue;
+                }
+
+                // 羽毛落出底部
+                if (f.y > canvas.height) {
+                    featherList.splice(i, 1);
+                }
+            }
+
+            // 绘制挡板
+            drawBoard(board.x, board.y, board.w, board.h);
+
+            // 绘制羽毛
+            featherList.forEach(f => {
+                drawFeather(f.x, f.y, f.w, f.h);
+            });
+        }
+
+        // 开始游戏
+        function startGame() {
+            const bgm = document.getElementById("gameBgm");
+            bgm.play().catch(e => {});
+
+            document.getElementById("startModal").classList.add("hide");
+
+            isGameRunning = true;
+            isPaused = false;
+            rainTriggered = false;
+            featherNum = 0;
+            featherList = [];
+            gameTime = 30;
+            document.getElementById("featherCount").innerText = 0;
+            document.getElementById("timeText").innerText = gameTime;
+            document.getElementById("pauseTip").style.display = "none";
+            eventText.style.display = "none";
+            rainLayer.style.display = "none";
+            rainLayer.innerHTML = "";
+
+            board.x = canvas.width / 2 - board.w / 2;
+
+            // 定时生成羽毛
+            spawnTimer = setInterval(() => {
+                if (!isGameRunning || isPaused) return;
+                featherList.push(createFeather());
+            }, 650);
+
+            // 倒计时
+            timer = setInterval(() => {
+                if (isPaused) return;
+                gameTime--;
+                document.getElementById("timeText").innerText = gameTime;
+
+                if (gameTime <= 0) {
+                    endGame();
+                    clearInterval(timer);
+                    clearInterval(spawnTimer);
+                    clearInterval(eventTimer);
+                }
+            }, 1000);
+            eventTimer = setInterval(() => {
+                if (!isGameRunning || isPaused || rainTriggered) return;
+                const now = 30 - gameTime;
+                if (now >= 5 && now <= 20 && Math.random() < 0.35) {
+                    triggerRainEvent();
+                }
+            }, 1000);
+
+            gameLoop();
+        }
+
+        // 结束游戏并兑换风晶碎片
+        function endGame() {
+            isGameRunning = false;
+            isPaused = false;
+
+            const crystalGain = featherNum;
+            document.getElementById("finalFeather").innerText = featherNum;
+            document.getElementById("crystalGet").innerText = crystalGain;
+            document.getElementById("endModal").classList.remove("hide");
+
+            // 写入存档
+            const saveData = loadGame();
+            if (saveData) {
+                if (!saveData.itemList) saveData.itemList = [];
+                for (let i = 0; i < crystalGain; i++) {
+                    saveData.itemList.push("风晶碎片");
+                }
+                localStorage.setItem("gameSave", JSON.stringify(saveData));
+            }
+        }
+
+        // 返回地图
+        document.getElementById("backMapBtn").onclick = () => {
+            const bgm = document.getElementById("gameBgm");
+            bgm.pause();
+            bgm.currentTime = 0;
+            location.href = `map.html?mode=${mode}&cnt=${cnt}&time=${time}`;
+            if (time==4) location.href = `story-${mode}.html?from=yun&cnt=${cnt}&time=${time}`;
+        };
+
+        document.getElementById("startBtn").onclick = startGame;
+    </script>
+</body>
+</html>

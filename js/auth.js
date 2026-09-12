@@ -28,7 +28,7 @@ function saveUsers(users)
 
 
 //注册用户
-function registerUser(username, password)
+function registerUser(username, password,gender)
 {
     const users = loadUsers();
 
@@ -53,6 +53,7 @@ function registerUser(username, password)
     users.push({
         username: username,
         password: password,
+        gender: gender,
         createdAt:
             new Date().toISOString()
     });
@@ -65,8 +66,6 @@ function registerUser(username, password)
         message: "注册成功"
     };
 }
-
-
 
 //登录
 function loginUser(username, password)
@@ -103,6 +102,21 @@ function loginUser(username, password)
         success: true,
         message: "登录成功"
     };
+}
+
+//获取性别
+function getCurrentGender()
+{
+    const username = getCurrentUser();
+    const users = loadUsers();
+    const user = users.find
+    (
+        function (item)
+        {
+            return item.username === username;
+        }
+    );
+    return user.gender;
 }
 
 //当前登录用户

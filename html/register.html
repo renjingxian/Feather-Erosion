@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册-羽蚀纪</title>
     <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/register.css">
 </head>
 <body class="main-bg">
     <div class="page">
@@ -22,6 +23,19 @@
             <input id="username" type="text" placeholder="请输入用户名">
             <input id="password" type="password" placeholder="请输入密码">
             <input id="confirm-password" type="password" placeholder="请再次输入密码">
+
+            <!-- 性别选择 -->
+            <div class="gender-select">
+                <label>性别：</label>
+                <label>
+                    <input type="radio" name="gender" value="male">
+                    男
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="female">
+                    女
+                </label>
+            </div>
 
             <button id="register-button" class="btn-primary">注册</button>
             <button id="back-button" class="btn-link">返回登录</button>

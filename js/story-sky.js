@@ -6,11 +6,18 @@ const silhouetteDom = document.getElementById("silhouetteDom");
 const mode = new URLSearchParams(window.location.search).get("mode");
 const save = loadGame();
 const exitGameButton = document.getElementById("exit-game-button");
+const mapMini = document.getElementById("mapMini");
+const from = new URLSearchParams(window.location.search).get("from");
+const cnt = new URLSearchParams(window.location.search).get("cnt");
+let time = new URLSearchParams(window.location.search).get("time");
+
+
 let istyping = false;
 let timer = null;
 let currentElement = null;
 let currentText = "";
 let cannext = true;
+let mapClickable = false;
 
 /*打字机效果*/
 function typeText(element, text, speed)
@@ -39,17 +46,108 @@ function typeText(element, text, speed)
 }
 
 /*当前剧情节点*/
-let currentNode = "start";
+let currentNode = "firstfreedom";
 let pos = 0;
 
 //所有剧情节点
 const nodes = 
 {
+  firstfreedom:
+  [
+    {
+      type:"narrator",
+      text:"【系统提示】\n在正式踏上归途之前，你有一整天可以自由探索。黄昏之前，你必须决定从哪里开始。\n点击左上角小地图开启自由探索。"
+    },
+    //yun
+    {
+      type:"narrator",
+      text:"集市悬浮在云层中，风晶石摊位随气流漂移。羽人商贩用哨音叫卖。你走在人群中，有人投来异样的目光——他们注意到了你的后背。"
+    },
+    {
+      type:"choice",
+      options:
+      [
+        {
+          label:"购买风晶石",
+          next:"yun1"
+        },
+        {
+          label:"寻找记忆羽毛",
+          next:"yun2"
+        },
+        {
+          label:"在边缘平台独坐",
+          next:"yun3"
+        },
+        {
+          label:"打听长老会的消息",
+          next:"yun4"
+        }
+      ]
+    },
+    {
+      type:"jump",
+      goto:"start"
+    }
+  ],
+  yun1:
+  [
+    {
+      type:"narrator",
+      text:"你购买了风晶石"
+    },
+    {
+      type:"jump",
+      goto:"mainmap"
+    }
+  ],
+  yun2:
+  [
+    {
+      type:"minigame",
+      label:"2"
+    },
+    {
+      type:"jump",
+      goto:"mainmap"
+    }
+  ],
+  yun3:
+  [
+    {
+      type:"narrator",
+      text:"你在边缘平台独坐"
+    },
+    {
+      type:"jump",
+      goto:"mainmap"
+    }
+  ],
+  yun4:
+  [
+    {
+      type:"narrator",
+      text:"你打听了长老会的消息"
+    },
+    {
+      type:"jump",
+      goto:"mainmap"
+    }
+  ],
+  mainmap:
+  [
+    {
+      type:"minigame",
+      label:"0"
+    }
+  ],
+
+
   start: 
   [
     {
       type:"narrator",
-      text:"【试翼之塔｜天空之城底部入口】两座白晶高塔之间，一道光门闪烁。两名羽人守卫持矛而立，翅膀收拢在背后，目光锐利。"
+      text:"自由行动日结束\n【试翼之塔｜天空之城底部入口】两座白晶高塔之间，一道光门闪烁。两名羽人守卫持矛而立，翅膀收拢在背后，目光锐利。"
     },
     {
       type:"char",
@@ -246,11 +344,25 @@ const nodes =
 };
 
 /*读取保存进度*/
-if (mode === "continue" )
+if (mode === "continue" || from)
 {
   currentNode = save.node;
   pos = save.index;
   cgDom.style.display = "none";
+  if (from)
+  {
+    if (from==="yun")
+    {
+      pos=1;
+      currentNode="firstfreedom";
+    }
+  }
+}
+
+if (time==4)
+{
+  currentNode="start";
+  pos=0;
 }
 
 /*当前节点数据*/
@@ -265,6 +377,7 @@ function render()
   /*jump*/
   if (item.type === "jump")
   {
+    mapClickable=false;
     currentNode = item.goto;
     nodeData = nodes[currentNode];
     pos = 0;
@@ -278,12 +391,14 @@ function render()
   choiceDom.style.display = "none";
   textDom.style.display = "none";
   if (silhouetteDom) silhouetteDom.style.display = "none";
+  textDom.classList.remove("char-mode");
 
   hint.textContent ="点击Enter/ Space/ ▸键 继续";
 
   /*标题*/
   if (item.type === "title")
   {
+    mapClickable=false;
     const box = document.createElement("div");
     const h1 = document.createElement("h1");
     const orn = document.createElement("div");
@@ -317,11 +432,19 @@ function render()
     scene.textContent = item.text;
     textDom.appendChild(scene);
     textDom.style.display = "block";
+    if (currentNode === "firstfreedom" && cgDom.style.display === "none")
+    {
+      mapMini.style.display = "block";
+      if (pos==0) mapClickable=true;
+    }
+    if (currentNode!="firstfreedom"||pos!=0) mapClickable=false;
   }
 
   /*人物对白*/
   else if (item.type === "char")
   {
+    mapClickable=false;
+    textDom.classList.add("char-mode");
     const box = document.createElement("div");
     const name = document.createElement("div");
     const line = document.createElement("p");
@@ -335,11 +458,20 @@ function render()
     textDom.appendChild(box);
     textDom.style.display = "block";
     typeText(line,item.text,40);
+    if (item.charImg)
+    {
+      silhouetteDom.style.backgroundImage =`url("${item.charImg}")`;
+      silhouetteDom.classList.remove("player", "npc");
+      if (item.role === "npc") silhouetteDom.classList.add("npc");
+      else silhouetteDom.classList.add("player");
+      silhouetteDom.style.display = "block";
+    }
   }
 
   /*选择*/
   else if (item.type === "choice")
   {
+    mapClickable=false;
     hint.textContent = "";
     choiceDom.innerHTML = "";
     item.options.forEach(function (opt)
@@ -363,11 +495,26 @@ function render()
     });
     choiceDom.style.display = "block";
   }
+  
+  else if (item.type==="minigame")
+  {
+    time++;
+    if (item.label==2) window.location.href = `game2.html?mode=sky&cnt=1&time=${time}`;
+    if (item.label==0&&time<4) window.location.href = `map.html?mode=sky&cnt=1&time=${time}`;
+    if (item.label==0&&time==4)
+    {
+      currentNode="start";
+      pos=0;
+      nodeData = nodes[currentNode];
+      render();
+    }
+  }
 }
 
 /*键盘推进剧情*/
 document.addEventListener("keydown",function (e)
 {
+  if (currentNode==="firstfreedom"&&pos==0) return;
   if (e.key === " "||e.key === "ArrowRight"||e.key === "Enter")
   {
     e.preventDefault();
@@ -408,5 +555,11 @@ render();
 /*退出游戏*/
 exitGameButton.addEventListener("click", function ()
 {
-    window.location.href = "mainmenu.html";
+  window.location.href = "mainmenu.html";
+});
+
+mapMini.addEventListener("click", function () 
+{
+  if (!mapClickable) return;
+  if (currentNode==="firstfreedom") window.location.href = "map.html?mode=sky&cnt=1&time=0";
 });

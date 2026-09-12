@@ -6,6 +6,12 @@ const silhouetteDom = document.getElementById("silhouetteDom");
 const mode = new URLSearchParams(window.location.search).get("mode");
 const save = loadGame();
 const exitGameButton = document.getElementById("exit-game-button");
+const gender=getCurrentGender();
+const playerImg = gender==="male" ? "../images/male-lead.jpg" : "../images/female-lead.jpg";
+
+console.log("当前性别：", gender);
+console.log("当前用户：", getCurrentUser());
+
 let istyping = false;
 let timer = null;
 let currentElement = null;
@@ -45,21 +51,24 @@ let curIndex = 0;
 const storyScript = [
     {
         type:"char",
+        role:"player",
         speaker:"内心独白",
         text:"在羽族的传说中，第一代羽人因为渴望天空的拥抱，才生出羽翼飞翔。但美丽而包容的天空啊，请你告诉我，为什么没有翅膀的人会坠落。",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"char",
+        role:"player",
         speaker:"内心独白",
         text:"那一天，渴望天空拥抱的我被他们从塔顶推了下来，坠落的瞬间，仿佛我也学会了飞翔。如果死前是这样的风声，这就是天空给我的答案吗？",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"char",
+        role:"player",
         speaker:"我",
         text:"咳...咳..咳",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"narrator",
@@ -73,48 +82,56 @@ const storyScript = [
     },
     {
         type:"char",
+        role:"player",
         speaker:"我",
         text:"好难受，但我居然还活着。",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"char",
+        role:"npc",
         speaker:"神秘商人",
         text:"不错啊，居然还活着。",
         charImg:""
     },
     {
         type:"char",
+        role:"player",
         speaker:"我",
         text:"你......是谁？",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"char",
+        role:"npc",
         speaker:"神秘商人",
         text:"这个问题很重要吗？比起这个，你难道不想知道‘你是谁’吗？",
         charImg:""
     },
     {
         type:"char",
+        role:"player",
         speaker:"我",
         text:"......",
-        charImg:""
+        charImg:playerImg
     },
     {
         type:"char",
+        role:"npc",
         speaker:"神秘商人",
         text:"这个世界线不久后就将毁灭，你是唯一能拯救它的人......很奇怪，那些羽蚀似乎并不会伤害你......",
         charImg:""
     },
     {
         type:"char",
+        role:"npc",
         speaker:"神秘商人",
         text:"不过这都是后话了，为了保全这条世界线，我可做了不少努力才找到你，不过我并不是强买强卖的主，我更喜欢看你们自己选择未来。",
         charImg:""
     },
     {
         type:"char",
+        role:"npc",
         speaker:"神秘商人",
         text:"所以，‘无翼者’，现在你有一天时间来探索这片你从未来过的大陆，不过在这之前，请告诉我，你更倾向于去往哪里呢？",
         charImg:""
@@ -150,6 +167,7 @@ function renderCurrentLine(){
     choiceDom.style.display = "none";
     silhouetteDom.style.display = "none";
     textDom.style.display = "none";
+    textDom.classList.remove("char-mode");
     isShowingChoice = false;
     hint.textContent = "点击Enter/ Space/ ▸键 继续";
 
@@ -165,6 +183,7 @@ function renderCurrentLine(){
     }
 
     else if(item.type === "char"){
+        textDom.classList.add("char-mode");
         const box = document.createElement("div");
         box.className = "dialog";
         const name = document.createElement("div");
@@ -178,8 +197,12 @@ function renderCurrentLine(){
         textDom.appendChild(box);
         textDom.style.display = "block";
         typeText(line, item.text, 40);
-        if(item.charImg){
-            silhouetteDom.style.backgroundImage = `url(${item.charImg})`;
+        if (item.charImg)
+        {
+            silhouetteDom.style.backgroundImage =`url("${item.charImg}")`;
+            silhouetteDom.classList.remove("player", "npc");
+            if (item.role === "npc") silhouetteDom.classList.add("npc");
+            else silhouetteDom.classList.add("player");
             silhouetteDom.style.display = "block";
         }
     }

@@ -36,26 +36,47 @@
     color: #555e6b;
 }
 
-/* 人物剪影（背景图由 JS 设置） */
-.char-silhouette-wrap {
+/* 人物立绘总区域 */
+.char-silhouette-wrap
+{
     position: absolute;
-    bottom: 80px;
-    left: 500px;
-    width: 100%;
-    height: 65%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
+    inset: 0;
+
     pointer-events: none;
+
+    z-index: 2;
 }
 
-.char-silhouette {
-    width: 30%;
-    height: 70%;
+/* 通用人物立绘 */
+.char-silhouette
+{
+    position: absolute;
+
+    bottom: 0;
+
+    width: min(30vw, 420px);
+    height: 75vh;
+
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: center bottom;
+
     display: none;
+}
+
+/* 玩家：左下角 */
+.char-silhouette.player
+{
+    left: 4vw;
+
+    background-position: left bottom;
+}
+
+/* NPC：右下角 */
+.char-silhouette.npc
+{
+    right: 4vw;
+
+    background-position: right bottom;
 }
 
 /* 背景层：图片 URL 由各页元素 style 属性提供 */
@@ -95,6 +116,7 @@
 /* 正文容器 */
 .story-box {
     position: absolute;
+    z-index: 4;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -114,12 +136,28 @@
     white-space: pre-line;
 }
 
-/* —— 对白容器：整体下移，靠近底部剪影（说话人/台词用 story.css 的 .speaker/.dialog-text） —— */
-.dialog {
+/*对白容器*/
+.dialog
+{
+    position: relative;
+    width: 100%;
+    min-height: 150px;
+    padding: 28px 34px;
     margin: 0;
     text-align: center;
-    position: relative;
-    top: 250px;
+    background: rgba(18, 22, 29, 0.48);
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 3px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.story-box.char-mode
+{
+    top: auto;
+    left: 0;
+    bottom: 0;
+    transform: none;
+    width: 100%;
 }
 
 /* 说话人：金色衬线，两侧 ◆ */
@@ -157,7 +195,7 @@
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 3;
+    z-index: 5;
     pointer-events: none;
 }
 
@@ -225,6 +263,34 @@
 .exit-game-button:hover
 {
     background: rgba(30, 35, 42, 0.9);
+}
+
+/*小地图*/
+.map-mini {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease;
+    display: none;
+}
+
+.map-mini img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+/* 鼠标移上去稍微放大 */
+.map-mini:hover {
+    transform: scale(1.08);
 }
 
 /* 响应式 */

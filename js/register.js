@@ -11,6 +11,7 @@ registerButton.addEventListener("click", function ()
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
+    const gender = document.querySelector('input[name="gender"]:checked');
 
     if (username === "")
     {
@@ -30,7 +31,14 @@ registerButton.addEventListener("click", function ()
         return;
     }
 
-    const result = registerUser(username, password);
+    if (!gender)
+    {
+        message.textContent = "请选择性别";
+        return;
+    }
+
+    const gendervalue = gender.value;
+    const result = registerUser(username, password,gendervalue);
 
     message.textContent = result.message;
 
