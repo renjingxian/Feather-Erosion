@@ -108,6 +108,8 @@ function loginUser(username, password)
 function getCurrentGender()
 {
     const username = getCurrentUser();
+    // 游客默认使用女主立绘
+    if (!username) return "female";
     const users = loadUsers();
     const user = users.find
     (
@@ -116,6 +118,7 @@ function getCurrentGender()
             return item.username === username;
         }
     );
+    if (!user) return "female";
     return user.gender;
 }
 
@@ -123,6 +126,12 @@ function getCurrentGender()
 function getCurrentUser()
 {
     return localStorage.getItem(CURRENT_USER_KEY);
+}
+
+//玩家显示名：登录用户显示用户名，游客显示“游客玩家”
+function getPlayerDisplayName()
+{
+    return getCurrentUser() || "游客玩家";
 }
 
 //退出登录

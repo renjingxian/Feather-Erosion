@@ -79,15 +79,6 @@
     background-position: right bottom;
 }
 
-/* 背景层：图片 URL 由各页元素 style 属性提供 */
-.bg-layer {
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.35;
-}
-
 /* —— 章节标题屏 —— */
 .seg-title .title-chapter {
     margin: 0 0 12px;
@@ -96,21 +87,27 @@
     font-size: 44px;
     line-height: 1.3;
     letter-spacing: 12px;
-    color: var(--text);
-    text-shadow: 0 0 26px rgba(232, 226, 212, 0.10);
+    color: #f3eee2;
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.55),
+        0 0 22px rgba(0, 0, 0, 0.18);
 }
 
 .seg-title .title-ornament {
     font-size: 12px;
     letter-spacing: 8px;
-    color: var(--gold-dim);
+    color: rgba(201, 161, 94, 0.92);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 }
 
 .seg-title .title-sub {
-    margin-top: 16px;
-    font-size: 15px;
-    letter-spacing: 8px;
-    color: var(--text-dim);
+    margin-top: 18px;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: rgba(232, 226, 212, 0.96);
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.80),
+        0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 /* 正文容器 */
@@ -127,13 +124,28 @@
 }
 
 /* —— 叙述 / 旁白 —— */
-.scene {
+.dialog-text,
+.scene
+{
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.scene
+{
     margin: 0;
+    padding: 20px 28px;
     color: var(--text);
     font-size: 17px;
     line-height: 1.9;
     text-align: center;
     white-space: pre-line;
+    background: rgba(10, 14, 20, 0.58);
+    border: 1px solid rgba(232, 226, 212, 0.10);
+    border-radius: 3px;
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 /*对白容器*/
@@ -145,10 +157,14 @@
     padding: 28px 34px;
     margin: 0;
     text-align: center;
-    background: rgba(18, 22, 29, 0.48);
-    border: 1px solid var(--panel-border-strong);
+    background: rgba(12, 16, 23, 0.76);
+    border: 1px solid rgba(232, 226, 212, 0.18);
     border-radius: 3px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    box-shadow:
+        0 -10px 40px rgba(0, 0, 0, 0.16),
+        0 12px 40px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .story-box.char-mode
@@ -163,6 +179,7 @@
 /* 说话人：金色衬线，两侧 ◆ */
 .speaker {
     margin-bottom: 12px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
     font-family: var(--font-serif);
     font-size: 16px;
     letter-spacing: 4px;
@@ -186,21 +203,24 @@
 }
 
 /* 推进提示：按 Enter / Space / ▸ 继续 */
-.hint {
-    color: var(--text-faint);
+.hint
+{
+    color: var(--text-dim);
     font-size: 12px;
     letter-spacing: 2px;
-    opacity: 0.7;
+    opacity: 0.82;
     position: absolute;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 5;
     pointer-events: none;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
 }
 
 /* —— 分支选项 —— */
 .option-box {
+    z-index: 4;
     position: absolute;
     bottom: 60px;
     left: 50%;
@@ -209,26 +229,95 @@
     display: none;
 }
 
-.option-box a {
+/* 选项过多时两列排布 */
+.option-box.multi {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    width: min(860px, calc(100vw - 40px));
+}
+.option-box.multi a {
+    margin: 0;
+}
+
+.option-box a
+{
     position: relative;
     display: block;
     padding: 12px 20px 12px 24px;
     margin: 12px 0;
     border: 1px solid var(--panel-border-strong);
     border-radius: 2px;
-    background: transparent;
+    background: rgba(10, 14, 20, 0.72);
     text-decoration: none;
     color: var(--text);
     letter-spacing: 4px;
     cursor: pointer;
-    transition: border-color 0.25s, color 0.25s, box-shadow 0.25s, padding-left 0.2s;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition:
+        border-color 0.25s,
+        color 0.25s,
+        box-shadow 0.25s,
+        padding-left 0.2s,
+        background 0.25s;
 }
 
-.option-box a:hover {
+.option-box a:hover
+{
     border-color: var(--gold);
     color: var(--gold);
-    box-shadow: 0 0 18px rgba(201, 161, 94, 0.16);
+    background: rgba(18, 22, 29, 0.90);
+    box-shadow:
+        0 0 18px rgba(201, 161, 94, 0.16),
+        0 8px 24px rgba(0, 0, 0, 0.30);
     padding-left: 28px;
+}
+
+/* 未满足前置条件的选项：置灰不可选，悬停提示 */
+.option-box a.option-disabled
+{
+    color: var(--text-dim);
+    border-color: var(--panel-border);
+    background: rgba(10, 14, 20, 0.45);
+    cursor: not-allowed;
+}
+
+.option-box a.option-disabled:hover
+{
+    border-color: var(--panel-border);
+    color: var(--text-dim);
+    background: rgba(10, 14, 20, 0.45);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+    padding-left: 24px;
+}
+
+.option-tip
+{
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background: rgba(5, 8, 12, 0.95);
+    color: #e0a65c;
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 3px;
+    white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.option-box a.option-disabled:hover .option-tip,
+.option-box a.option-disabled:focus .option-tip
+{
+    opacity: 1;
+    visibility: visible;
 }
 
 /* 物品清单 */
@@ -249,34 +338,160 @@
     right: 20px;
     z-index: 1000;
 
-    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
 
     color: var(--text);
     background: rgba(15, 19, 24, 0.75);
 
     border: 1px solid var(--panel-border);
-    border-radius: 4px;
+    border-radius: 50%;
 
     cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .exit-game-button:hover
 {
     background: rgba(30, 35, 42, 0.9);
+    border-color: var(--gold);
+}
+
+/* 设置弹窗 */
+.settings-overlay
+{
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.settings-overlay[hidden]
+{
+    display: none;
+}
+
+.settings-modal
+{
+    width: min(320px, calc(100vw - 48px));
+    padding: 30px 26px 24px;
+    background: rgba(15, 19, 24, 0.98);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
+.settings-title
+{
+    margin: 0 0 22px;
+    font-family: var(--font-serif);
+    font-size: 22px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+}
+
+.settings-btn
+{
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 16px;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.settings-btn:hover
+{
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(201, 161, 94, 0.08);
+}
+
+.settings-btn-danger:hover
+{
+    border-color: #c05b5b;
+    color: #e08a8a;
+    background: rgba(192, 91, 91, 0.08);
+}
+
+/* 音量调节 */
+.settings-volume
+{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 4px 0 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+}
+
+.settings-volume-label
+{
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.settings-volume input[type="range"]
+{
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--panel-border-strong);
+    outline: none;
+    cursor: pointer;
+}
+
+.settings-volume input[type="range"]::-webkit-slider-thumb
+{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    cursor: pointer;
+}
+
+.settings-volume input[type="range"]::-moz-range-thumb
+{
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    cursor: pointer;
 }
 
 /*小地图*/
 .map-mini {
     position: fixed;
     top: 20px;
-    left: 20px;
-    width: 100px;
-    height: 100px;
-    border-radius: 10px;
-    overflow: hidden;
+    left: 35px;
+    width: 70px;
+    height: 70px;
     cursor: pointer;
     z-index: 9999;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     transition: transform 0.2s ease;
     display: none;
 }
@@ -286,6 +501,8 @@
     height: 100%;
     display: block;
     object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* 鼠标移上去稍微放大 */
@@ -293,9 +510,652 @@
     transform: scale(1.08);
 }
 
+.map-tip {
+    position: absolute;
+    top: 50%;
+    left: 110%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 8px 12px;
+    background: rgba(10, 14, 20, 0.9);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 200;
+}
+
+/*背包*/
+.bag-mini {
+    position: fixed;
+    top: 100px;
+    left: 35px;
+    width: 70px;
+    height: 70px;
+    z-index: 9999;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.bag-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.bag-mini:hover {
+    transform: scale(1.08);
+}
+
+.bag-mini.opened .bag-tip {
+    display: none;
+}
+
+/* 鼠标移上去显示“破旧的行囊” */
+.bag-tip {
+    position: absolute;
+    top: 50%;
+    /* 提示出现在背包右边 */
+    left: 80px;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 7px 12px;
+    background: rgba(10, 12, 18, 0.92);
+    border: 1px solid var(--gold-dim);
+    color: var(--text);
+    font-size: 14px;
+    border-radius: 4px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.bag-mini:hover .bag-tip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 物品栏：紧贴背包右侧 */
+.inventory-panel {
+    position: fixed;
+    top: 130px;
+    left: 105px;
+    width: 300px;
+    height: 320px;
+    z-index: 9998;
+    background: rgba(10, 13, 20, 0.96);
+    border: 1px solid var(--gold-dim);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    /* 默认关闭 */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-10px);
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s;
+}
+
+/* 展开 */
+.inventory-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* 标题栏 */
+.inventory-header {
+    height: 60px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(201, 161, 94, 0.35);
+    color: var(--gold);
+    font-size: 18px;
+}
+
+
+/* 关闭按钮 */
+#inventoryClose {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 26px;
+    cursor: pointer;
+}
+
+#inventoryClose:hover {
+    color: var(--text);
+}
+
+/*物品区域*/
+.inventory-content {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: grid;
+    /* 每行3个 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: 10px;
+}
+
+/* 单个物品格 */
+.inventory-item {
+    position: relative;
+    width: 100%;
+    height: 90px;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 6px 4px;
+    border: 1px solid rgba(201, 161, 94, 0.28);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.035);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* 鼠标经过物品 */
+.inventory-item:hover {
+    border-color: var(--gold);
+    background: rgba(201, 161, 94, 0.08);
+    transform: translateY(-2px);
+}
+
+/* 图片容器 */
+.inventory-item-icon {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/*物品图片*/
+.inventory-item-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 52px;
+    max-height: 52px;
+    object-fit: contain;
+}
+
+/* 物品名字 */
+.inventory-item-name {
+    width: 100%;
+    margin-top: 5px;
+    color: var(--text-dim);
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 数量，例如 ×2 */
+.inventory-item-count {
+    position: absolute;
+    right: 4px;
+    bottom: 3px;
+    color: var(--gold);
+    font-size: 11px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* 空背包提示 */
+.inventory-empty {
+    grid-column: 1 / -1;
+    margin-top: 30px;
+    color: var(--text-faint);
+    text-align: center;
+    font-size: 14px;
+}
+
+/*物品栏中的所有图片都不能超过52px*/
+.inventory-content img {
+    max-width: 52px !important;
+    max-height: 52px !important;
+    object-fit: contain;
+}
+
+/*物品详情*/
+.item-detail {
+    position: fixed;
+    width: 220px;
+    padding: 14px 16px;
+    z-index: 10000;
+    background: rgba(9, 12, 18, 0.97);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-5px);
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease,
+        visibility 0.15s;
+}
+
+/* 显示详情 */
+.item-detail.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* 物品名称 */
+.item-detail-name {
+    color: var(--gold);
+    font-family: var(--font-serif);
+    font-size: 16px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(201, 161, 94, 0.25);
+}
+
+/* 描述 */
+.item-detail-desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.7;
+    text-align: left;
+}
+
+/* 数量 */
+.item-detail-count {
+    margin-top: 10px;
+    color: var(--text-faint);
+    font-size: 12px;
+    text-align: right;
+}
+
+/* 成就系统按钮 */
+.achievement-mini {
+    position: fixed;
+    top: 180px;
+    left: 35px;
+    width: 70px;
+    height: 70px;
+    z-index: 9999;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.achievement-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* 鼠标经过稍微放大 */
+.achievement-mini:hover {
+    transform: scale(1.08);
+}
+
+/* 鼠标提示 */
+.achievement-tip {
+    position: absolute;
+    top: 50%;
+    left: 80px;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 7px 12px;
+    background: rgba(10, 12, 18, 0.92);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.achievement-mini:hover .achievement-tip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.story-bg
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+    transition: background-image 0.5s ease;
+}
+
+.story-bg::after
+{
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* 上方轻，下方重，对话框区域更暗 */
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(5, 8, 12, 0.20) 0%,
+            rgba(5, 8, 12, 0.28) 55%,
+            rgba(5, 8, 12, 0.55) 100%
+        );
+    z-index: 1;
+}
+
+.video-block {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: #000;
+    display: none;
+}
+
+.video-block video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.skip-video {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+}
+
+.story-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    display: none;
+}
+
+/*四族主要 NPC 好感度显示*/
+.vitals-box {
+    position: fixed;
+    top: 20px;
+    right: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 320px;
+    padding: 10px 14px;
+    background: rgba(12, 16, 24, 0.78);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    z-index: 100;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.vital-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 22px;
+}
+.vital-label {
+    color: var(--text-dim);
+    min-width: 56px;
+}
+.hp-bar {
+    flex: 1;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 9px;
+    overflow: hidden;
+}
+.hp-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #d9858b, #c94b52);
+    transition: width 0.3s ease;
+}
+.hp-value,
+.currency-value {
+    color: var(--gold);
+    font-weight: bold;
+    min-width: 44px;
+    text-align: right;
+}
+
+.affection-box {
+    position: fixed;
+    top: 70px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 170px;
+    padding: 10px 14px;
+    background: rgba(12, 16, 24, 0.78);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    z-index: 100;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: auto;
+    cursor: default;
+}
+
+
+/* 每一个 NPC 一行 */
+.affection-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 26px;
+}
+
+
+/* NPC 名字 */
+.affection-name {
+    color: var(--text-dim);
+    min-width: 64px;
+}
+
+
+/* 爱心 */
+.affection-heart {
+    color: #d9858b;
+    font-size: 18px;
+}
+
+
+/* 四个人的好感度数值 */
+#affection-value,
+#affection-sky-value,
+#affection-empire-value,
+#affection-forest-value,
+#affection-underground-value {
+    color: var(--gold);
+    font-weight: bold;
+    min-width: 24px;
+    text-align: center;
+}
+
+
+/* 鼠标提示 */
+.affection-tip {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 24px);
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 8px 12px;
+    background: rgba(10, 14, 20, 0.92);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+    pointer-events: none;
+    z-index: 200;
+}
+
+
+/* 只显示鼠标当前指向的 NPC 提示 */
+.affection-item:hover .affection-tip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 状态栏 */
+.status-box {
+    position: fixed;
+    /* 好感度在 top:70px，这里放到它下面 */
+    top: 220px;
+    right: 24px;
+    width: 190px;
+    padding: 10px 12px;
+    background: rgba(12, 16, 24, 0.82);
+    border: 1px solid rgba(201, 161, 94, 0.45);
+    border-radius: 8px;
+    color: var(--text);
+    /* 和好感度处于同一层级 */
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.status-title {
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(201, 161, 94, 0.25);
+}
+
+/* 单个状态 */
+.status-item {
+    position: relative;
+    font-size: 13px;
+    padding: 5px 7px;
+    margin-top: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: default;
+}
+
+/* 鼠标移上状态时稍微高亮 */
+.status-item:hover {
+    background: rgba(201, 161, 94, 0.10);
+    color: var(--text);
+}
+
+/* 状态详情 */
+.status-tip {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 12px);
+    transform: translateY(-50%);
+    width: 230px;
+    padding: 10px 12px;
+    background: rgba(10, 14, 20, 0.96);
+    border: 1px solid rgba(201, 161, 94, 0.55);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+    z-index: 200;
+}
+
+/* 鼠标移到状态上显示详情 */
+.status-item:hover .status-tip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 没有状态时整个状态栏隐藏 */
+.status-box:has(#status-list:empty) {
+    display: none;
+}
+
 /* 响应式 */
 @media (max-width: 560px) {
     .dialog-text { font-size: 16px; }
     .seg-title .title-chapter { font-size: 30px; letter-spacing: 7px; }
     .seg-title .title-sub { letter-spacing: 4px; }
+
+    /* 人物立绘：竖屏收窄收矮，避免与底部文字框争抢 */
+    .char-silhouette {
+        width: min(46vw, 200px);
+        height: 58vh;
+    }
+
+    /* 右侧状态面板：窄屏收窄缩小，避免溢出遮挡正文 */
+    .vitals-box {
+        min-width: 0;
+        width: 148px;
+        right: 56px;
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 4px;
+    }
+    .vitals-box .hp-bar { height: 12px; }
+    .affection-box {
+        min-width: 0;
+        right: 8px;
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    .affection-item { height: 20px; gap: 4px; }
+    .affection-name { min-width: 48px; }
+    .status-box {
+        right: 8px;
+        width: 148px;
+        padding: 6px 8px;
+        font-size: 12px;
+    }
 }

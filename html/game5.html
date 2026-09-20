@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安放炸弹</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+    width:100%;height:100%;overflow:hidden;
+    background:#07090f;color:#e6edf3;
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+    user-select:none;
+}
+#gameWrap{
+    width:100vw;height:100vh;position:relative;
+    display:flex;align-items:center;justify-content:center;
+}
+#canvas{
+    border:1px solid #2a3142;
+    background:#0d1117;
+    border-radius:50%;
+    box-shadow:
+        0 0 0 6px #161b22,
+        0 0 40px rgba(56,189,248,0.12),
+        0 0 120px rgba(0,0,0.6);
+}
+.ui-panel{
+    position:absolute;top:24px;left:24px;z-index:10;
+    background:rgba(13,17,23,0.82);
+    padding:18px 22px;border-radius:14px;
+    border:1px solid #21262d;
+    min-width:260px;
+}
+.info{margin-bottom:10px;font-size:17px;letter-spacing:0.5px;}
+.info b{color:#7dd3fc;font-weight:bold;margin-right:6px;}
+.progress-bar{
+    width:240px;height:10px;background:#161b22;border:1px solid #30363d;border-radius:999px;overflow:hidden;
+    margin-top:6px;
+}
+.progress-inner{
+    height:100%;
+    background:linear-gradient(90deg,#38bdf8,#a78bfa);
+    width:0%;
+    transition:none;
+}
+.life-dot{
+    display:inline-block;width:10px;height:10px;border-radius:50%;
+    background:#38bdf8;margin-right:6px;margin-top:4px;
+    box-shadow:0 0 8px rgba(56,189,248,0.6);
+}
+.life-dot.lost{background:#484f58;box-shadow:none;}
+.pop{
+    position:absolute;width:420px;max-width:calc(100vw - 32px);padding:30px;
+    background:rgba(13,17,23,0.94);
+    border:1px solid #30363d;
+    border-radius:16px;z-index:20;text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.7);
+}
+.pop button{
+    margin-top:18px;padding:11px 22px;font-size:16px;cursor:pointer;
+    background:linear-gradient(135deg,#2563eb,#4f46e5);
+    color:#fff;border:none;border-radius:8px;
+    letter-spacing:1px;transition:0.2s;
+}
+.pop button:hover{filter:brightness(1.15)}
+#rulePop{width:480px;max-width:calc(100vw - 32px);text-align:left;}
+#rulePop h2{text-align:center;margin-bottom:16px;color:#7dd3fc;font-size:22px;}
+#rulePop p{margin:9px 0;font-size:15px;line-height:1.6;color:#c9d1d9;}
+#popBox{display:none;}
+.warn{color:#f87171;font-weight:bold;}
+.ok{color:#4ade80;font-weight:bold;}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+    <canvas id="canvas"></canvas>
+    <div class="ui-panel">
+        <div class="info"><b>轮次</b><span id="roundText">1 / 4</span></div>
+        <div class="info"><b>状态</b><span id="statusText">准备开始</span></div>
+        <div class="info"><b id="chanceLabel">安放机会</b>
+            <span id="lifeBox">
+                <span class="life-dot"></span>
+                <span class="life-dot"></span>
+            </span>
+        </div>
+        <div class="info">指针进度</div>
+        <div class="progress-bar">
+            <div class="progress-inner" id="progressBar"></div>
+        </div>
+    </div>
+    <div class="pop" id="rulePop">
+        <h2 id="ruleTitle">安放炸弹</h2>
+        <p id="rule1">1. 指针沿完整圆环顺时针转动，每轮最多走<strong>2圈</strong>，走完2圈本轮失败。</p>
+        <p id="rule2">2. 按下空格键安放炸弹，指针落在绿色区域判定成功。</p>
+        <p id="rule3">3. 绿色区域随机生成，区域内<strong>一部分闪烁后，第二圈消失</strong>。</p>
+        <p id="rule4">4. 闪烁段消失后，再在该位置安放算失败；其余绿色区域仍然有效。</p>
+        <p id="rule5">5. 每轮有2次安放机会；共4轮，绿色区域逐轮缩小，指针速度逐轮加快。</p>
+        <button id="startBtn">开始游戏</button>
+    </div>
+    <div class="pop" id="popBox">
+        <h2 id="popTitle"></h2>
+        <p id="popMsg"></p>
+        <button id="popBtn">返回剧情</button>
+        <button id="retryBtn" style="margin-left:12px">重新挑战</button>
+    </div>
+</div>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const roundText = document.getElementById("roundText");
+const statusText = document.getElementById("statusText");
+const progressBar = document.getElementById("progressBar");
+const lifeBox = document.getElementById("lifeBox");
+const popBox = document.getElementById("popBox");
+const popTitle = document.getElementById("popTitle");
+const popMsg = document.getElementById("popMsg");
+const popBtn = document.getElementById("popBtn");
+const retryBtn = document.getElementById("retryBtn");
+const rulePop = document.getElementById("rulePop");
+const startBtn = document.getElementById("startBtn");
+const chanceLabel = document.getElementById("chanceLabel");
+const ruleTitle = document.getElementById("ruleTitle");
+const rule1 = document.getElementById("rule1");
+const rule2 = document.getElementById("rule2");
+const rule3 = document.getElementById("rule3");
+const rule4 = document.getElementById("rule4");
+const rule5 = document.getElementById("rule5");
+const gameParams = new URLSearchParams(window.location.search);
+const rawTask = gameParams.get("task") || "bomb";
+const task = ["antibody", "bomb", "rune", "council"].includes(rawTask) ? rawTask : "bomb";
+const requestedReturnPage = gameParams.get("return") || "story-empire.html";
+const returnPage = requestedReturnPage.endsWith(".html") &&
+    !requestedReturnPage.includes("/") &&
+    !requestedReturnPage.includes("\\") &&
+    !requestedReturnPage.includes("..")
+    ? requestedReturnPage
+    : "story-empire.html";
+const GAME_TEXTS = {
+    antibody: {
+        title: "抗体检测",
+        successTitle: "检测成功",
+        failTitle: "检测失败",
+        chanceLabel: "检测机会",
+        actionHint: "指针转动，按下空格进行抗体检测！",
+        successStatus: "检测成功！",
+        allSuccess: "全部4轮抗体检测完成！",
+        failFinal: "检测位置不在绿色区域，机会用尽，检测失败",
+        failRetry: "检测失败，不在绿色区域，剩余机会：",
+        timeout: "指针走完2圈，错过检测时机",
+        rule2: "2. 按下空格键进行抗体检测，指针落在绿色区域判定本轮检测成功。",
+        rule3: "3. 绿色检测区域随机生成，区域内一部分闪烁后，第二圈消失。",
+        rule4: "4. 闪烁段消失后，再在该位置检测算失败；其余绿色区域仍然有效。",
+        rule5: "5. 每轮有2次检测机会；共4轮，绿色区域逐轮缩小，指针速度逐轮加快。"
+    },
+    bomb: {
+        title: "安放炸弹",
+        successTitle: "任务成功",
+        failTitle: "任务失败",
+        chanceLabel: "安放机会",
+        actionHint: "指针转动，按下空格安放炸弹！",
+        successStatus: "安放成功！",
+        allSuccess: "全部4轮炸弹安放完成！",
+        failFinal: "安放位置不在绿色区域，机会用尽，任务失败",
+        failRetry: "安放失败，不在绿色区域，剩余机会：",
+        timeout: "指针走完2圈，错过安放时机",
+        rule2: "2. 按下空格键安放炸弹，指针落在绿色区域判定成功。",
+        rule3: "3. 绿色区域随机生成，区域内一部分闪烁后，第二圈消失。",
+        rule4: "4. 闪烁段消失后，再在该位置安放算失败；其余绿色区域仍然有效。",
+        rule5: "5. 每轮有2次安放机会；共4轮，绿色区域逐轮缩小，指针速度逐轮加快。"
+    },
+    rune: {
+        title: "校准符文",
+        successTitle: "校准成功",
+        failTitle: "校准失败",
+        chanceLabel: "校准机会",
+        actionHint: "指针转动，按下空格校准符文！",
+        successStatus: "校准成功！",
+        allSuccess: "全部4轮符文校准完成！",
+        failFinal: "校准位置不在绿色区域，机会用尽，校准失败",
+        failRetry: "校准失败，不在绿色区域，剩余机会：",
+        timeout: "指针走完2圈，错过校准时机",
+        rule2: "2. 按下空格键校准符文，指针落在绿色区域判定本轮校准成功。",
+        rule3: "3. 绿色区域随机生成，区域内一部分闪烁后，第二圈消失。",
+        rule4: "4. 闪烁段消失后，再在该位置校准算失败；其余绿色区域仍然有效。",
+        rule5: "5. 每轮有2次校准机会；共4轮，绿色区域逐轮缩小，指针速度逐轮加快。"
+    },
+    council: {
+        title: "说服议员",
+        successTitle: "说服成功",
+        failTitle: "说服失败",
+        chanceLabel: "说服机会",
+        actionHint: "指针转动，按下空格说服议员！",
+        successStatus: "说服成功！",
+        allSuccess: "全部4轮说服完成！",
+        failFinal: "说服时机不在绿色区域，机会用尽，说服失败",
+        failRetry: "说服失败，不在绿色区域，剩余机会：",
+        timeout: "指针走完2圈，错过说服时机",
+        rule2: "2. 按下空格键说服议员，指针落在绿色区域判定本轮说服成功。",
+        rule3: "3. 绿色区域随机生成，区域内一部分闪烁后，第二圈消失。",
+        rule4: "4. 闪烁段消失后，再在该位置说服算失败；其余绿色区域仍然有效。",
+        rule5: "5. 每轮有2次说服机会；共4轮，绿色区域逐轮缩小，指针速度逐轮加快。"
+    }
+};
+const GAME_TEXT = GAME_TEXTS[task];
+document.title = GAME_TEXT.title;
+ruleTitle.textContent = GAME_TEXT.title;
+chanceLabel.textContent = GAME_TEXT.chanceLabel;
+rule2.textContent = GAME_TEXT.rule2;
+rule3.textContent = GAME_TEXT.rule3;
+rule4.textContent = GAME_TEXT.rule4;
+rule5.textContent = GAME_TEXT.rule5;
+canvas.width = 640;
+canvas.height = 640;
+let currentRound = 1;
+let currentAngle = 0;
+let gameRun = false;
+let roundActive = false;
+let flashColor = 0;
+let finalResult = null;
+let greenStart = 0;
+let greenEnd = 0;
+let fadeStart = 0;
+let fadeEnd = 0;
+let fadeZoneGone = false;
+let chance = 2;
+let usedChance = 0;
+let lastTs = performance.now();
+const roundsSpeed = [
+    0.032,
+    0.040,
+    0.048,
+    0.056
+];
+const roundsWidth = [
+    1.10,
+    0.82,
+    0.58,
+    0.46
+];
+function randomGreenZone(width){
+    const s = Math.random() * (Math.PI * 2 - width);
+    const e = s + width;
+    return {s, e};
+}
+function inArcRange(val, start, end){
+    if(start < end){
+        return val >= start && val <= end;
+    }else{
+        return val >= start || val <= end;
+    }
+}
+function updateLifeUI(){
+    lifeBox.innerHTML = "";
+    for(let i = 0; i < chance; i++){
+        const dot = document.createElement("span");
+        dot.className = "life-dot" + (i < chance - usedChance ? "" : " lost");
+        lifeBox.appendChild(dot);
+    }
+}
+function resetRound(){
+    currentAngle = 0;
+    roundActive = true;
+    usedChance = 0;
+    chance = 2;
+    updateLifeUI();
+    fadeZoneGone = false;
+    progressBar.style.width = "0%";
+    const w = roundsWidth[currentRound - 1];
+    const zone = randomGreenZone(w);
+    greenStart = zone.s;
+    greenEnd = zone.e;
+    const fadePartLen = (greenEnd - greenStart) * 0.45;
+    fadeStart = greenStart;
+    fadeEnd = greenStart + fadePartLen;
+    statusText.textContent = GAME_TEXT.actionHint;
+    statusText.className = "";
+    roundText.textContent = currentRound + " / 4";
+}
+function checkPlace(){
+    if(!roundActive) return;
+    roundActive = false;
+    const d = currentAngle % (Math.PI * 2);
+    let inGreen = false;
+    if(!fadeZoneGone){
+        inGreen = inArcRange(d, greenStart, greenEnd);
+    }else{
+        inGreen = inArcRange(d, fadeEnd, greenEnd);
+    }
+    if(inGreen){
+        statusText.textContent = GAME_TEXT.successStatus;
+        statusText.className = "ok";
+        flashColor = 1;
+        if(currentRound >= 4){
+            gameOver(true, GAME_TEXT.allSuccess);
+        }else{
+            currentRound++;
+            setTimeout(resetRound, 1400);
+        }
+        return;
+    }
+    usedChance++;
+    updateLifeUI();
+    flashColor = -1;
+    if(usedChance >= chance){
+        gameOver(false, GAME_TEXT.failFinal);
+    }else{
+        roundActive = true;
+        statusText.textContent = GAME_TEXT.failRetry + (chance - usedChance);
+        statusText.className = "warn";
+    }
+}
+function gameOver(isWin, msg){
+    gameRun = false;
+    finalResult = isWin ? "win" : "fail";
+    popBox.style.display = "block";
+    popTitle.textContent = isWin ? GAME_TEXT.successTitle : GAME_TEXT.failTitle;
+    popMsg.textContent = msg;
+}
+retryBtn.onclick = () => {
+    popBox.style.display = "none";
+    finalResult = null;
+    currentRound = 1;
+    resetRound();
+    gameRun = true;
+};
+popBtn.onclick = () => {
+    if(!finalResult) return;
+    const url = new URL(returnPage, window.location.href);
+    url.searchParams.set("mode", "continue");
+    url.searchParams.set("checkResult", finalResult);
+    fadeNav(url.href);
+};
+window.addEventListener("keydown", e => {
+    if(e.code === "Space" && gameRun && roundActive){
+        e.preventDefault();
+        checkPlace();
+    }
+});
+function render(){
+    if(flashColor !== 0){
+        ctx.fillStyle = flashColor === 1
+            ? "rgba(74,222,128,0.18)"
+            : "rgba(248,113,113,0.18)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        flashColor = 0;
+    }else{
+        ctx.fillStyle = "#0d1117";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const rOuter = 240;
+    const rInner = 180;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+    ctx.arc(cx, cy, rInner, Math.PI * 2, 0, true);
+    ctx.fillStyle = "#161b22";
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#30363d";
+    for(let i = 0; i < 24; i++){
+        const a = (Math.PI * 2 / 24) * i;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * (rOuter + 6), cy + Math.sin(a) * (rOuter + 6));
+        ctx.lineTo(cx + Math.cos(a) * (rOuter + 14), cy + Math.sin(a) * (rOuter + 14));
+        ctx.stroke();
+    }
+    if(gameRun){
+        ctx.beginPath();
+        ctx.arc(cx, cy, rOuter, fadeEnd, greenEnd);
+        ctx.arc(cx, cy, rInner, greenEnd, fadeEnd, true);
+        ctx.fillStyle = "rgba(74,222,128,0.8)";
+        ctx.fill();
+        if(!fadeZoneGone){
+            const blink = Math.sin(Date.now() * 0.005) * 0.2 + 0.8;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rOuter, fadeStart, fadeEnd);
+            ctx.arc(cx, cy, rInner, fadeEnd, fadeStart, true);
+            ctx.fillStyle = `rgba(74,222,128,${blink})`;
+            ctx.fill();
+        }
+    }
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(currentAngle);
+    ctx.beginPath();
+    ctx.moveTo(-14, 0);
+    ctx.lineTo(rOuter - 6, 0);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#f87171";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rOuter - 18, -10);
+    ctx.lineTo(rOuter - 6, 0);
+    ctx.lineTo(rOuter - 6, 10);
+    ctx.closePath();
+    ctx.fillStyle = "#f87171";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+    ctx.fillStyle = "#f87171";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#0d1117";
+    ctx.fill();
+    ctx.restore();
+}
+function loop(ts){
+    const dt = Math.min((ts - lastTs)/1000, 0.05);
+    lastTs = ts;
+    if(gameRun && roundActive){
+        let speed = roundsSpeed[currentRound - 1];
+        currentAngle += speed * dt * 60;
+        if(!fadeZoneGone && currentAngle >= Math.PI * 2){
+            fadeZoneGone = true;
+            statusText.textContent = "⚠ 绿色闪烁段已消失，后半段有效！";
+            statusText.className = "warn";
+        }
+        const progress = Math.min(100, (currentAngle / (Math.PI * 2 * 2)) * 100);
+        progressBar.style.width = progress + "%";
+        if(currentAngle >= Math.PI * 2 * 2){
+            roundActive = false;
+            gameOver(false, GAME_TEXT.timeout);
+        }
+    }
+    render();
+    requestAnimationFrame(loop);
+}
+startBtn.onclick = function(){
+    rulePop.style.display = "none";
+    gameRun = true;
+    currentRound = 1;
+    resetRound();
+};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

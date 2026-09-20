@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水排序谜题</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;background:#141620;color:#fff}
+#gameWrap{width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.top-bar{display:flex;gap:24px;align-items:center;margin-bottom:20px}
+.level-text{font-size:22px}
+.step-text{font-size:20px}
+.undo-text{font-size:20px}
+.btn{padding:8px 16px;font-size:16px;background:#2c4b99;color:#fff;border:none;border-radius:6px;cursor:pointer}
+.btn:disabled{background:#555;cursor:not-allowed;opacity:0.6}
+.btn:hover:not(:disabled){background:#3b62c2}
+#bottleContainer{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:900px}
+.bottle{width:70px;height:180px;position:relative;border:3px solid #aab;border-top:none;border-radius:0 0 12px 12px;cursor:pointer;overflow:hidden;transition:all 0.3s}
+.bottle.selected{border-color:#6cf;box-shadow:0 0 12px #6cf}
+.bottle.removed{opacity:0;pointer-events:none;width:0;margin:0;border:none}
+.layer{width:100%;height:40px;position:absolute;bottom:0}
+.pop{position:absolute;padding:24px;background:rgba(0,0,0,0.88);border:1px solid #88a;border-radius:10px;z-index:30;text-align:center;min-width:320px;max-width:calc(100vw - 32px)}
+.pop h2{margin-bottom:12px}
+.pop button{margin:8px;padding:8px 14px;font-size:16px;cursor:pointer}
+#winPop{display:none}
+#tipPop{display:none}
+#fullMask{
+    display:none;
+    position:absolute;
+    z-index:100;
+    top:0;left:0;
+    width:100vw;height:100vh;
+    background:#000;
+    color:#fff;
+    font-size:36px;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:20px;
+}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+    <div class="top-bar">
+        <div class="level-text">关卡：<span id="levelNum">1</span></div>
+        <div class="step-text">步数：<span id="stepNum">0</span></div>
+        <div class="undo-text">撤回次数：<span id="undoNum">2</span></div>
+        <button class="btn" id="undoBtn">撤回上一步</button>
+        <button class="btn" id="resetBtn">重置本关</button>
+        <button class="btn" id="nextBtn">下一关</button>
+        <button class="btn" id="addBottleBtn">获得空瓶子+1</button>
+    </div>
+    <div id="bottleContainer"></div>
+    <div class="pop" id="winPop">
+        <h2>🎉 通关成功！</h2>
+        <p>所有颜色已经分类完成</p>
+        <button id="winNext">前往下一关</button>
+        <button id="partialBack">结束净化（部分完成）</button>
+        <button id="winBack">返回</button>
+    </div>
+    <div class="pop" id="tipPop">
+        <h2>获取空瓶子</h2>
+        <p>等待15秒即可获得1个空瓶子</p>
+        <button id="confirmBtn">确认</button>
+        <button id="cancelBtn">取消</button>
+    </div>
+    <div id="fullMask">
+        <div>难道是僵尸吃掉了你的脑子？</div>
+        <div id="maskCountText">15</div>
+    </div>
+</div>
+<audio id="bgm" loop>
+    <source src="../audios/game6.mp3" type="audio/mpeg">
+</audio>
+<audio id="waterSfx">
+    <source src="../audios/water.mp3" type="audio/mpeg">
+</audio>
+<script>
+const mode = new URLSearchParams(location.search).get("mode") || "forest";
+document.getElementById("bgm").volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_bgm_volume") || "1")));
+const levelNum = document.getElementById("levelNum");
+const stepNum = document.getElementById("stepNum");
+const undoNum = document.getElementById("undoNum");
+const undoBtn = document.getElementById("undoBtn");
+const resetBtn = document.getElementById("resetBtn");
+const nextBtn = document.getElementById("nextBtn");
+const bottleContainer = document.getElementById("bottleContainer");
+const winPop = document.getElementById("winPop");
+const winNext = document.getElementById("winNext");
+const partialBack = document.getElementById("partialBack");
+const winBack = document.getElementById("winBack");
+const addBottleBtn = document.getElementById("addBottleBtn");
+const tipPop = document.getElementById("tipPop");
+const confirmBtn = document.getElementById("confirmBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const fullMask = document.getElementById("fullMask");
+const maskCountText = document.getElementById("maskCountText");
+
+const COLORS = {
+    red:"#e64545",
+    yellow:"#ffd037",
+    blue:"#4287f5",
+    green:"#3fc968"
+};
+const colorList = ["red","yellow","blue","green"];
+const levelConfig = [
+    {totalBottle:6, emptyBottle:2, perColor:4},
+    {totalBottle:8, emptyBottle:2, perColor:8},
+    {totalBottle:10,emptyBottle:1, perColor:12}
+];
+let currentLv = 0;
+let bottles = [];
+let selectedIdx = -1;
+let stepCount = 0;
+let unlockedLevel = 0;
+let undoCount = 2;
+let historyStack = [];
+let isMasking = false;
+
+function shuffle(arr) {
+    let a = [...arr];
+    for(let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+function checkColorTotal(lvData){
+    const cnt = {red:0,yellow:0,blue:0,green:0};
+    for(let b of lvData){
+        for(let c of b){
+            cnt[c]++;
+        }
+    }
+    for(let key in cnt){
+        if(cnt[key]%4!==0){
+            return false;
+        }
+    }
+    return true;
+}
+function isWin(state){
+    for(let b of state){
+        if(b.length ===0) continue;
+        if(b.length <4) return false;
+        const first = b[0];
+        for(let c of b){
+            if(c!==first) return false;
+        }
+    }
+    return true;
+}
+function getTop(arr){
+    return arr.length>0 ? arr[arr.length-1] : null;
+}
+function pourClone(state, from, to){
+    const s = JSON.parse(JSON.stringify(state));
+    const f = s[from];
+    const t = s[to];
+    const topF = getTop(f);
+    const topT = getTop(t);
+    if(!topF) return null;
+    if(t.length >=4) return null;
+    if(topT && topT !== topF) return null;
+    let cnt =0;
+    for(let i=f.length-1;i>=0;i--){
+        if(f[i] === topF && t.length + cnt <4) cnt++;
+        else break;
+    }
+    for(let i=0;i<cnt;i++) t.push(f.pop());
+    return s;
+}
+// 优化：带最大步数限制的DFS，找到解立刻返回，不再遍历全部状态
+function hasSolution(startState, maxDepth = 60){
+    const visited = new Set();
+    function dfs(state, depth){
+        if(depth >= maxDepth) return false;
+        if(isWin(state)) return true;
+        const key = JSON.stringify(state);
+        if(visited.has(key)) return false;
+        visited.add(key);
+        for(let f=0;f<state.length;f++){
+            for(let t=0;t<state.length;t++){
+                if(f===t) continue;
+                const next = pourClone(state,f,t);
+                if(next){
+                    if(dfs(next, depth+1)) return true;
+                }
+            }
+        }
+        return false;
+    }
+    return dfs(startState,0);
+}
+function generateLevel(totalBottle, emptyBottle, perColor){
+    while(true){
+        let pool = [];
+        for(let c of colorList){
+            for(let i=0;i<perColor;i++) pool.push(c);
+        }
+        pool = shuffle(pool);
+        const usableBottles = totalBottle - emptyBottle;
+        const bottleList = Array.from({length:usableBottles}, ()=>[]);
+        for(let color of pool){
+            for(let k=0;k<usableBottles;k++){
+                if(bottleList[k].length <4){
+                    bottleList[k].push(color);
+                    break;
+                }
+            }
+        }
+        for(let i=0;i<emptyBottle;i++) bottleList.push([]);
+        if(checkColorTotal(bottleList) && hasSolution(bottleList)){
+            return bottleList;
+        }
+    }
+}
+function saveHistory(){
+    historyStack.push(JSON.parse(JSON.stringify(bottles)));
+}
+function loadLevel(lvIndex){
+    if(lvIndex > unlockedLevel) return;
+    currentLv = lvIndex;
+    const cfg = levelConfig[lvIndex];
+    bottles = generateLevel(cfg.totalBottle, cfg.emptyBottle, cfg.perColor);
+    selectedIdx = -1;
+    stepCount = 0;
+    undoCount = 2;
+    historyStack = [];
+    levelNum.textContent = currentLv+1;
+    stepNum.textContent = stepCount;
+    undoNum.textContent = undoCount;
+    winPop.style.display = "none";
+    partialBack.style.display = "inline-block";
+    // 仅第三关（索引2）显示按钮，1、2关隐藏
+    if(currentLv === 2){
+        addBottleBtn.style.display = "inline-block";
+    }else{
+        addBottleBtn.style.display = "none";
+    }
+    renderBottles();
+    updateNextBtnState();
+    updateUndoBtn();
+}
+function updateNextBtnState(){
+    if(currentLv + 1 < levelConfig.length && (currentLv + 1) <= unlockedLevel){
+        nextBtn.disabled = false;
+    }else{
+        nextBtn.disabled = true;
+    }
+}
+function updateUndoBtn(){
+    undoNum.textContent = undoCount;
+    if(undoCount <=0 || historyStack.length ===0){
+        undoBtn.disabled = true;
+    }else{
+        undoBtn.disabled = false;
+    }
+}
+function renderBottles(){
+    bottleContainer.innerHTML = "";
+    for(let i=0;i<bottles.length;i++){
+        const bottleData = bottles[i];
+        const div = document.createElement("div");
+        div.className = "bottle";
+        if(i === selectedIdx) div.classList.add("selected");
+        if(bottleData.length ===4){
+            const first = bottleData[0];
+            let allSame = true;
+            for(let c of bottleData){
+                if(c!==first){allSame=false;break;}
+            }
+            if(allSame){
+                div.classList.add("removed");
+            }
+        }
+        for(let l=0;l<bottleData.length;l++){
+            const layer = document.createElement("div");
+            layer.className = "layer";
+            layer.style.backgroundColor = COLORS[bottleData[l]];
+            layer.style.bottom = l*40 + "px";
+            div.appendChild(layer);
+        }
+        div.onclick = ()=>bottleClick(i);
+        bottleContainer.appendChild(div);
+    }
+}
+function bottleClick(idx){
+    if(isMasking) return;
+    const b = bottles[idx];
+    if(b.length===4){
+        let same = true;
+        const f = b[0];
+        for(let c of b){if(c!==f){same=false;break;}}
+        if(same) return;
+    }
+    if(selectedIdx === -1){
+        selectedIdx = idx;
+        renderBottles();
+    }else{
+        if(selectedIdx === idx){
+            selectedIdx = -1;
+            renderBottles();
+            return;
+        }
+        const from = bottles[selectedIdx];
+        const to = bottles[idx];
+        const topFrom = getTop(from);
+        const topTo = getTop(to);
+        let canPour = false;
+        if(topFrom && to.length<4 && (!topTo || topTo===topFrom)){
+            canPour = true;
+        }
+        if(canPour){
+            saveHistory();
+            tryPour(selectedIdx, idx);
+            updateUndoBtn();
+        }
+        selectedIdx = -1;
+        renderBottles();
+        checkWin();
+    }
+}
+function tryPour(fromIdx, toIdx){
+    const sfx = document.getElementById("waterSfx");
+    sfx.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_sfx_volume") || "1")));
+    sfx.currentTime = 0;
+    sfx.play().catch(e=>{});
+    const from = bottles[fromIdx];
+    const to = bottles[toIdx];
+    const topFrom = getTop(from);
+    const topTo = getTop(to);
+    if(!topFrom) return;
+    if(to.length >=4) return;
+    if(topTo !== null && topTo !== topFrom) return;
+    let pourCount = 0;
+    for(let i=from.length-1;i>=0;i--){
+        if(from[i] === topFrom && to.length + pourCount <4){
+            pourCount++;
+        }else break;
+    }
+    for(let i=0;i<pourCount;i++){
+        to.push(from.pop());
+    }
+    stepCount++;
+    stepNum.textContent = stepCount;
+}
+function undoStep(){
+    if(isMasking) return;
+    if(undoCount <=0 || historyStack.length ===0) return;
+    bottles = historyStack.pop();
+    undoCount--;
+    stepCount--;
+    stepNum.textContent = stepCount;
+    selectedIdx = -1;
+    renderBottles();
+    updateUndoBtn();
+}
+function checkWin(){
+    for(let b of bottles){
+        if(b.length ===0) continue;
+        const first = b[0];
+        let allSame = true;
+        for(let c of b){
+            if(c!==first){allSame=false;break;}
+        }
+        if(!allSame) return;
+        if(b.length <4) return;
+    }
+    if(currentLv +1 > unlockedLevel){
+        unlockedLevel = currentLv +1;
+    }
+    setTimeout(()=>{
+        winPop.style.display="block";
+        // 前两关通关后允许以“部分净化”返回剧情；第三关通关则只按完全成功结算
+        partialBack.style.display = currentLv < levelConfig.length - 1 ? "inline-block" : "none";
+        updateNextBtnState();
+    },200);
+}
+resetBtn.onclick = ()=>{
+    if(isMasking) return;
+    loadLevel(currentLv);
+}
+nextBtn.onclick = ()=>{
+    if(isMasking) return;
+    if(currentLv+1 < levelConfig.length && (currentLv+1) <= unlockedLevel){
+        loadLevel(currentLv+1);
+    }
+}
+winNext.onclick = ()=>{
+    if(currentLv+1 < levelConfig.length){
+        loadLevel(currentLv+1);
+        updateNextBtnState();
+    }else{
+        //全部通关，返回剧情页面
+        document.getElementById("bgm").pause();
+        fadeNav("story-" + mode + ".html?minigameResult=win");
+    }
+}
+partialBack.onclick = ()=>{
+    document.getElementById("bgm").pause();
+    fadeNav("story-" + mode + ".html?minigameResult=partial");
+}
+winBack.onclick = ()=>{
+    winPop.style.display="none";
+}
+undoBtn.onclick = undoStep;
+
+addBottleBtn.onclick = ()=>{
+    tipPop.style.display = "block";
+}
+cancelBtn.onclick = ()=>{
+    tipPop.style.display = "none";
+}
+confirmBtn.onclick = ()=>{
+    tipPop.style.display = "none";
+    isMasking = true;
+    fullMask.style.display = "flex";
+    let timer = 15;
+    maskCountText.textContent = timer;
+    const countTimer = setInterval(()=>{
+        timer--;
+        maskCountText.textContent = timer;
+        if(timer <=0){
+            clearInterval(countTimer);
+            fullMask.style.display = "none";
+            bottles.push([]);
+            renderBottles();
+            isMasking = false;
+        }
+    },1000);
+}
+
+// 首次点击时播放 BGM（适配浏览器自动播放策略）
+document.addEventListener("click", function(){
+    document.getElementById("bgm").play().catch(e=>{});
+}, {once:true});
+
+loadLevel(0);
+</script>
+</body>
+</html>

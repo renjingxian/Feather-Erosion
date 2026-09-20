@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>羽蚀纪 · 游戏说明</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+  html,body{min-height:100%}
+  body{
+    background:#14131c;
+    background-image:linear-gradient(rgba(20,19,28,.90),rgba(20,19,28,.94)), url("../images/main-bg.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    color:#e8e6f0;
+    line-height:1.8;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:32px 24px 60px}
+  .topbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+  .back-btn{
+    display:inline-block;padding:9px 24px;font-size:15px;color:#f4e6c0;
+    background:rgba(60,50,30,.55);border:1px solid #b08d4f;border-radius:6px;
+    cursor:pointer;text-decoration:none;transition:.2s;
+  }
+  .back-btn:hover{background:rgba(176,141,79,.35)}
+  h1{font-size:36px;text-align:center;color:#f0d78c;letter-spacing:3px;margin:12px 0 4px}
+  .subtitle{text-align:center;color:#a99;font-size:15px;margin-bottom:28px}
+  h2{font-size:20px;color:#f0d78c;margin:28px 0 12px;padding-left:10px;border-left:3px solid #b08d4f}
+  p{margin:8px 0}
+  ul{margin:8px 0 8px 22px}
+  li{margin:6px 0}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(176,141,79,.25);border-radius:10px;padding:18px 22px;margin:12px 0}
+  .hl{font-weight:bold;color:#f0d78c}
+  table{width:100%;border-collapse:collapse;margin:10px 0}
+  th,td{border:1px solid rgba(176,141,79,.3);padding:8px 10px;text-align:left;font-size:15px}
+  th{background:rgba(176,141,79,.18);color:#f0d78c}
+  .foot{text-align:center;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back-btn" href="mainmenu.html">← 返回主菜单</a></div>
+
+  <h1>羽蚀纪</h1>
+  <div class="subtitle">天空的悼亡曲 · 游戏说明</div>
+
+  <h2>游戏简介</h2>
+  <div class="card">
+    <p>《羽蚀纪：天空的悼亡曲》是一部多线剧情的文字冒险游戏。</p>
+    <p>在羽族的世界里，生来便能飞翔是理所当然的事。而你是一名没有翅膀的「无翼者」，被从塔顶推下，却在坠落后幸存。神秘商人告诉你，这条世界线即将被「羽蚀」吞噬，唯有不被羽蚀所伤的你，有机会拯救它。</p>
+    <p>序章之后，你将走向四条命运的分岔：</p>
+    <ul>
+      <li><span class="hl">天空之城</span>——回到那片把你推落的天空，追问真相。</li>
+      <li><span class="hl">帝国城邦</span>——在废墟之上，建立新的秩序。</li>
+      <li><span class="hl">精灵之森</span>——走向东方没有谎言、只有回声的森林。</li>
+      <li><span class="hl">地下古堡</span>——潜入泥土之下，挖掘埋藏的一切答案。</li>
+    </ul>
+  </div>
+
+  <h2>基本操作</h2>
+  <div class="card">
+    <ul>
+      <li><span class="hl">推进剧情</span>：点击画面 / 空格 / Enter / → 键继续；点击选项做出选择。</li>
+      <li><span class="hl">保存退出</span>：剧情界面右上角齿轮 →「保存并退出」。</li>
+      <li><span class="hl">继续游戏</span>：进度自动保存，回到主菜单点「继续游戏」即可续玩。</li>
+      <li><span class="hl">保存机制tip</span>：游客模式进度仅在当前浏览会话中保留，关闭页面后将清除。</li>
+    </ul>
+  </div>
+
+  <h2>玩法提示</h2>
+  <div class="card">
+    <ul>
+      <li><span class="hl">自由行动</span>：每天有 4 次行动机会，去不同地点触发事件、收集物品、提升好感。行动点用完即进入下一阶段，规划好再动身。</li>
+      <li><span class="hl">好感度</span>：四位主角（赛琳、奥德里克、艾拉瑞亚、格里姆）各自的好感会影响结局走向，多留意对话选择。</li>
+      <li><span class="hl">物品与记忆碎片</span>：探索中收集的材料可在集市兑换（如风晶石）；机械羽翼等关键物品会开启新的剧情分支。</li>
+      <li><span class="hl">小游戏</span>：共有 8 种，失败大多可以重试，成功才推进剧情，不必急躁。</li>
+      <li><span class="hl">多结局</span>：不同选择与好感会通向不同结局，建议多周目探索。</li>
+    </ul>
+  </div>
+
+  <h2>小游戏速览</h2>
+  <div class="card">
+    <table>
+      <tr><th>小游戏</th><th>出现场合</th><th>操作要点</th></tr>
+      <tr><td>风晶挖掘</td><td>矿道采集</td><td>空格发射抓钩采集晶石，避开灰色石头</td></tr>
+      <tr><td>追风者</td><td>寻找记忆羽毛</td><td>A / D 移动挡板接住羽毛，数量越多奖励越丰</td></tr>
+      <tr><td>战斗</td><td>各线战斗</td><td>按提示完成战斗判定</td></tr>
+      <tr><td>潜入</td><td>潜入档案室 / 穹顶等</td><td>把握时机，避免被发现</td></tr>
+      <tr><td>技能检定</td><td>符文校准 / 抗体检测 / 安放炸弹</td><td>指针落在绿色区域时按下空格</td></tr>
+      <tr><td>滴血培养</td><td>精灵之森培养</td><td>把颜色分类到各瓶（水排序谜题）</td></tr>
+      <tr><td>根脉封堵</td><td>精灵之森封堵裂隙</td><td>按提示封印裂隙</td></tr>
+      <tr><td>回声</td><td>回声洞穴·学首歌</td><td>记住箭头顺序，用 W/A/S/D 依次弹奏</td></tr>
+    </table>
+  </div>
+
+  <div class="foot"><a class="back-btn" href="mainmenu.html">← 返回主菜单</a></div>
+</div>
+    <script src="../js/click.js"></script>
+</body>
+</html>

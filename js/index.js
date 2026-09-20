@@ -5,15 +5,15 @@ const loginButton = document.getElementById("login-button");
 
 developersButton.addEventListener("click", function ()
 {
-    window.location.href = "html/group.html";
+    clickNav("html/group.html");
 });
 
 registerButton.addEventListener("click", function ()
 {
-    window.location.href = "html/register.html";
+    clickNav("html/register.html");
 });
 
 loginButton.addEventListener("click", function ()
 {
-    window.location.href = "html/login.html";
+    clickNav("html/login.html");
 });

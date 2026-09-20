@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学首歌(小游戏·回声)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;color:#fff}
+#gameWrap{
+    width:100vw;height:100vh;
+    position:relative;
+    background:url("../images/game8.jpg") no-repeat center center;
+    background-size:cover;
+    overflow:hidden;
+}
+.ui-panel{
+    position:absolute;top:20px;left:20px;z-index:10;
+}
+.info-text{font-size:22px;margin-bottom:8px}
+.tip-text{font-size:24px;color:#cde;padding:8px 0;font-weight:bold}
+#gameCanvas{
+    width:100%;height:100%;
+}
+.pop{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    padding:30px;background:rgba(0,0,0,0.85);border:2px solid #779;
+    border-radius:12px;z-index:20;text-align:center;min-width:360px;max-width:calc(100vw - 32px);
+}
+.pop h2{margin-bottom:16px;font-size:26px}
+.pop p{margin-bottom:12px;font-size:18px;line-height:1.6}
+.pop button{
+    padding:10px 20px;font-size:18px;margin:8px;cursor:pointer;
+    background:#345699;color:#fff;border:none;border-radius:6px;
+}
+.pop button:hover{background:#4672cc}
+#startPop{display:block}
+#winPop{display:none}
+#errPop{display:none}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+    <div class="ui-panel">
+        <div class="info-text">关卡：<span id="levelText">1</span>/3</div>
+        <div class="tip-text" id="statusText">准备开始</div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div class="pop" id="startPop">
+        <h2>学首歌 · 回声</h2>
+        <p>规则：先观看依次下落的方向箭头，记住顺序</p>
+        <p>W=上，A=左，S=下，D=右</p>
+        <p>弹奏时逐键判定，按错会弹出提示并从头重新播放</p>
+        <button id="startBtn">开始游戏</button>
+    </div>
+    <div class="pop" id="winPop">
+        <h2>🎉 本段完成</h2>
+        <p id="winMsg"></p>
+        <button id="winNextBtn">继续</button>
+    </div>
+    <div class="pop" id="errPop">
+        <p style="font-size:24px;margin-bottom:8px">记忆错误，请重试</p>
+        <button id="errBtn">重新开始</button>
+        <button id="giveUpBtn">放弃</button>
+    </div>
+</div>
+<audio id="bgm" loop>
+    <source src="../audios/gameBGM.mp3" type="audio/mpeg">
+</audio>
+<audio id="correctSfx">
+    <source src="../audios/correct.mp3" type="audio/mpeg">
+</audio>
+<audio id="wrongSfx">
+    <source src="../audios/wrong.mp3" type="audio/mpeg">
+</audio>
+<script>
+const mode = new URLSearchParams(window.location.search).get("mode") || "forest";
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize",resizeCanvas);
+
+const levelText = document.getElementById("levelText");
+const statusText = document.getElementById("statusText");
+const startPop = document.getElementById("startPop");
+const winPop = document.getElementById("winPop");
+const errPop = document.getElementById("errPop");
+const startBtn = document.getElementById("startBtn");
+const winNextBtn = document.getElementById("winNextBtn");
+const errBtn = document.getElementById("errBtn");
+const giveUpBtn = document.getElementById("giveUpBtn");
+const winMsg = document.getElementById("winMsg");
+const bgm = document.getElementById("bgm");
+bgm.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_bgm_volume") || "1")));
+
+const levelConfig = [
+    {len:8},
+    {len:12},
+    {len:16}
+];
+const dirMap = {
+    "w":"up",
+    "a":"left",
+    "s":"down",
+    "d":"right"
+};
+const dirColor = {
+    up:"#a6e7e9",
+    left:"#c7b8e8",
+    down:"#e9d8a6",
+    right:"#b4e2b2"
+};
+let currentLv = 0;
+let sequence = [];
+let playerInput = [];
+let phase = "idle"; // idle / watch / input
+let arrows = [];
+let animationId = null;
+let lastTime = 0;
+let spawnTimers = [];
+const fallSpeed = 160;
+const spawnGap = 600;
+
+function makeSequence(count){
+    const dirList = ["up","left","down","right"];
+    const arr = [];
+    for(let i=0;i<count;i++){
+        const r = Math.floor(Math.random()*4);
+        arr.push(dirList[r]);
+    }
+    return arr;
+}
+
+function calcArrowXs(count){
+    const spacing = Math.min(80, (canvas.width * 0.72) / Math.max(count - 1, 1));
+    const startX = canvas.width * 0.5 - (spacing * (count - 1)) / 2;
+    const xs = [];
+    for(let i=0;i<count;i++){
+        xs.push(startX + i * spacing);
+    }
+    return xs;
+}
+
+function clearSpawnTimers(){
+    spawnTimers.forEach(t=>clearTimeout(t));
+    spawnTimers = [];
+}
+
+function drawArrow(x,y,type){
+    ctx.save();
+    ctx.translate(x,y);
+    const c = dirColor[type];
+    ctx.fillStyle="#223344";
+    if(type==="up"){
+        ctx.beginPath();
+        ctx.moveTo(24,4);ctx.lineTo(44,36);ctx.lineTo(32,36);ctx.lineTo(32,44);ctx.lineTo(16,44);ctx.lineTo(16,36);ctx.lineTo(4,36);ctx.closePath();
+        ctx.fill();
+    }else if(type==="left"){
+        ctx.beginPath();
+        ctx.moveTo(4,24);ctx.lineTo(36,4);ctx.lineTo(36,16);ctx.lineTo(44,16);ctx.lineTo(44,32);ctx.lineTo(36,32);ctx.lineTo(36,44);ctx.closePath();
+        ctx.fill();
+    }else if(type==="down"){
+        ctx.beginPath();
+        ctx.moveTo(24,44);ctx.lineTo(44,12);ctx.lineTo(32,12);ctx.lineTo(32,4);ctx.lineTo(16,4);ctx.lineTo(16,12);ctx.lineTo(4,12);ctx.closePath();
+        ctx.fill();
+    }else if(type==="right"){
+        ctx.beginPath();
+        ctx.moveTo(44,24);ctx.lineTo(12,4);ctx.lineTo(12,16);ctx.lineTo(4,16);ctx.lineTo(4,32);ctx.lineTo(12,32);ctx.lineTo(12,44);ctx.closePath();
+        ctx.fill();
+    }
+    ctx.fillStyle=c;
+    if(type==="up"){
+        ctx.beginPath();
+        ctx.moveTo(24,8);ctx.lineTo(40,32);ctx.lineTo(28,32);ctx.lineTo(28,40);ctx.lineTo(20,40);ctx.lineTo(20,32);ctx.lineTo(8,32);ctx.closePath();
+        ctx.fill();
+    }else if(type==="left"){
+        ctx.beginPath();
+        ctx.moveTo(8,24);ctx.lineTo(32,8);ctx.lineTo(32,20);ctx.lineTo(40,20);ctx.lineTo(40,28);ctx.lineTo(32,28);ctx.lineTo(32,40);ctx.closePath();
+        ctx.fill();
+    }else if(type==="down"){
+        ctx.beginPath();
+        ctx.moveTo(24,40);ctx.lineTo(40,16);ctx.lineTo(28,16);ctx.lineTo(28,8);ctx.lineTo(20,8);ctx.lineTo(20,16);ctx.lineTo(8,16);ctx.closePath();
+        ctx.fill();
+    }else if(type==="right"){
+        ctx.beginPath();
+        ctx.moveTo(40,24);ctx.lineTo(16,8);ctx.lineTo(16,20);ctx.lineTo(8,20);ctx.lineTo(8,28);ctx.lineTo(16,28);ctx.lineTo(16,40);ctx.closePath();
+        ctx.fill();
+    }
+    ctx.shadowColor = c;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.restore();
+}
+
+function playSequence(){
+    clearSpawnTimers();
+    phase = "watch";
+    arrows = [];
+    playerInput = [];
+    const xs = calcArrowXs(sequence.length);
+    let delay = 0;
+    sequence.forEach((dir,idx)=>{
+        const t = setTimeout(()=>{
+            arrows.push({
+                dir:dir,
+                x:xs[idx],
+                y:-60,
+                active:true
+            });
+        },delay);
+        spawnTimers.push(t);
+        delay += spawnGap;
+    });
+}
+
+function gameLoop(timestamp){
+    const dt = (timestamp - lastTime)/1000;
+    lastTime = timestamp;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let a of arrows){
+        if(a.active){
+            a.y += fallSpeed * dt;
+            drawArrow(a.x,a.y,a.dir);
+            if(a.y > canvas.height + 60){
+                a.active = false;
+            }
+        }
+    }
+    if(phase === "watch"){
+        const allDone = arrows.every(x=>!x.active);
+        if(allDone){
+            phase = "input";
+            statusText.textContent="【弹奏阶段】请输入序列：W A S D";
+        }
+    }
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+// 键盘监听：逐键判定
+window.addEventListener("keydown",(e)=>{
+    if(phase !== "input") return;
+    const key = e.key.toLowerCase();
+    if(!["w","a","s","d"].includes(key)) return;
+    const d = dirMap[key];
+    // 当前该按的键 = sequence[playerInput.length]
+    const expect = sequence[playerInput.length];
+    if(d !== expect){
+        // 按错：弹出提示，回到本关最开始
+        phase = "idle";
+        const wrongSfx = document.getElementById("wrongSfx");
+        wrongSfx.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_sfx_volume") || "1")));
+        wrongSfx.currentTime = 0;
+        wrongSfx.play().catch(e=>{});
+        errPop.style.display = "block";
+        return;
+    }
+    playerInput.push(d);
+    const sfx = document.getElementById("correctSfx");
+    sfx.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_sfx_volume") || "1")));
+    sfx.currentTime = 0;
+    sfx.play().catch(e=>{});
+    if(playerInput.length === sequence.length){
+        // 全部按对
+        phase = "idle";
+        if(currentLv >= levelConfig.length -1){
+            winMsg.textContent="全部3段完成！";
+        }else{
+            winMsg.textContent="本段记忆完成";
+        }
+        winPop.style.display="block";
+    }
+});
+
+errBtn.onclick = ()=>{
+    errPop.style.display = "none";
+    statusText.textContent="【记忆阶段】记住箭头顺序！";
+    playSequence();
+};
+
+giveUpBtn.onclick = ()=>{
+    bgm.pause();
+    fadeNav(`story-${mode}.html?checkResult=fail&result=fail`);
+};
+
+startBtn.onclick = ()=>{
+    startPop.style.display="none";
+    bgm.play().catch(e=>{});
+    sequence = makeSequence(levelConfig[currentLv].len);
+    levelText.textContent = currentLv+1;
+    statusText.textContent="【记忆阶段】记住箭头顺序！";
+    playSequence();
+    lastTime = performance.now();
+    animationId = requestAnimationFrame(gameLoop);
+}
+winNextBtn.onclick = ()=>{
+    winPop.style.display="none";
+    currentLv++;
+    if(currentLv >= levelConfig.length){
+        bgm.pause();
+        fadeNav(`story-${mode}.html?checkResult=win&result=win`);
+        return;
+    }
+    sequence = makeSequence(levelConfig[currentLv].len);
+    levelText.textContent = currentLv+1;
+    statusText.textContent="【记忆阶段】记住箭头顺序！";
+    playSequence();
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script src="../js/transition.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羽蚀纪｜天空之城</title>
@@ -8,31 +9,137 @@
     <link rel="stylesheet" href="../css/story.css">
 </head>
 <body>
-    <button id="exit-game-button" class="exit-game-button">退出游戏</button>
-<div class="story-wrap">
-    <div class="bg-layer" style="background-image:url('../images/bg_sky.jpg')"></div>
-
-    <div class="cg-block" id="cgDom">
-        <div class="cg-tip-text">【天空之城 · 场景CG】</div>
-        <div class="skip-hint">点击画面任意位置跳过</div>
+    <button id="exit-game-button" class="exit-game-button" title="设置" aria-label="设置"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg></button>
+    <div class="settings-overlay" id="settingsOverlay" hidden>
+        <div class="settings-modal">
+            <h2 class="settings-title">设置</h2>
+            <div class="settings-volume">
+                <span class="settings-volume-label">音乐音量</span>
+                <input type="range" id="bgmVolume" min="0" max="100" value="100" step="1" />
+            </div>
+            <div class="settings-volume">
+                <span class="settings-volume-label">音效音量</span>
+                <input type="range" id="sfxVolume" min="0" max="100" value="100" step="1" />
+            </div>
+            <button class="settings-btn" id="settingsContinue" type="button">返回游戏</button>
+            <button class="settings-btn settings-btn-danger" id="settingsSaveExit" type="button">保存并退出</button>
+            <button class="settings-btn settings-btn-danger" id="settingsRestart" type="button">重新开始</button>
+        </div>
     </div>
 
-    <div class="map-mini" id="mapMini">
-        <img src="../images/minimap.jpg" alt="地图">
+    <!-- 生命值 -->
+    <div id="vitals-box" class="vitals-box">
+        <div class="vital-row">
+            <span class="vital-label">生命</span>
+            <div class="hp-bar"><div class="hp-fill" id="hp-fill"></div></div>
+            <span class="hp-value" id="hp-value">100/100</span>
+        </div>
     </div>
 
-    <div class="char-silhouette-wrap">
-        <div class="char-silhouette" id="silhouetteDom"></div>
+    <!-- 四族主要 NPC 好感度 -->
+    <div id="affection-box" class="affection-box">
+
+        <div class="affection-item">
+            <span class="affection-name">赛琳</span>
+            <span class="affection-heart">♥</span>
+            <span id="affection-value">5</span>
+            <div id="affection-tip" class="affection-tip">
+                赛琳好感度：5
+            </div>
+        </div>
+
+        <div class="affection-item">
+            <span class="affection-name">奥德里克</span>
+            <span class="affection-heart">♥</span>
+            <span id="affection-empire-value">0</span>
+            <div id="affection-empire-tip" class="affection-tip">
+                奥德里克好感度：0
+            </div>
+        </div>
+
+        <div class="affection-item">
+            <span class="affection-name">艾拉瑞亚</span>
+            <span class="affection-heart">♥</span>
+            <span id="affection-forest-value">0</span>
+            <div id="affection-forest-tip" class="affection-tip">
+                艾拉瑞亚好感度：0
+            </div>
+        </div>
+
+        <div class="affection-item">
+            <span class="affection-name">格里姆</span>
+            <span class="affection-heart">♥</span>
+            <span id="affection-underground-value">0</span>
+            <div id="affection-underground-tip" class="affection-tip">
+                格里姆好感度：0
+            </div>
+        </div>
+
     </div>
 
-    <div class="story-box" id="textDom"></div>
-    <div class="option-box" id="choiceDom"></div>
+    <!-- 状态栏 -->
+    <div id="status-box" class="status-box">
+        <div class="status-title">当前状态</div>
+        <div id="status-list"></div>
+    </div>
 
-    <div class="hint" id="hint">点击Enter/ Space/ ▸键 继续</div>
-</div>
+    <div class="status-box intel-box">
+        <div class="status-title">获得情报</div>
+        <div id="intel-list"></div>
+    </div>
 
-<script src="../js/auth.js"></script>
-<script src="../js/save.js"></script>
-<script src="../js/story-sky.js"></script>
+    <div class="story-wrap">
+        <div class="map-mini" id="mapMini">
+            <img src="../images/minimap.jpg" alt="地图">
+            <div id="mapTip" class="map-tip">商人的地图</div>
+        </div>
+
+        <!-- 背包 -->
+        <div class="bag-mini" id="bagMini">
+            <img src="../images/bag.jpg" alt="背包">
+            <div class="bag-tip">破旧的行囊</div>
+        </div>
+
+        <!-- 物品栏 -->
+        <div class="inventory-panel" id="inventoryPanel">
+            <div class="inventory-header">
+                <span>破旧的行囊</span>
+                <button id="inventoryClose">×</button>
+            </div>
+            <div class="inventory-content" id="inventoryContent"></div>
+        </div>
+
+        <!-- 物品详情 -->
+        <div class="item-detail" id="itemDetail">
+            <div class="item-detail-name" id="itemDetailName"></div>
+            <div class="item-detail-desc" id="itemDetailDesc"></div>
+            <div class="item-detail-count" id="itemDetailCount"></div>
+        </div>
+
+        <!-- 成就系统按钮 -->
+        <div class="achievement-mini" onclick="turnNav('achievement.html')">
+            <img src="../images/miniachieve.jpg" alt="成就系统">
+            <div class="achievement-tip">成就</div>
+        </div>
+
+        <div class="char-silhouette-wrap">
+            <div class="char-silhouette" id="silhouetteDom"></div>
+        </div>
+
+        <div class="story-box" id="textDom"></div>
+        <div class="option-box" id="choiceDom"></div>
+
+        <div class="hint" id="hint">点击画面 / Enter / Space / ▸键 继续</div>
+        <div id="storyBg" class="story-bg"></div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/save.js"></script>
+    <script src="../js/bgm.js"></script>
+    <script src="../js/click.js"></script>
+    <script src="../js/turn.js"></script>
+    <script src="../js/achievement-toast.js"></script>
+    <script src="../js/story-sky.js"></script>
+    <script src="../js/task.js"></script>
 </body>
 </html>

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天空之城战斗</title>
+<link rel="stylesheet" href="../css/common.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0c1018;font-family:Microsoft YaHei,sans-serif;color:#fff}
+#gameWrap{
+    width:100vw;height:100vh;position:relative;
+    background:url("../images/fight background.jpg") no-repeat center center;
+    background-size:cover;
+    overflow:hidden;
+}
+.ui-box{position:absolute;z-index:20;pointer-events:none}
+.ui-box>*{pointer-events:auto}
+.info-top{top:16px;left:16px}
+.turn-info{font-size:18px;background:rgba(0,0,0,0.55);padding:6px 12px;border:2px solid #aaa;margin-bottom:8px;}
+.def-info{font-size:16px;background:rgba(0,0,0.55);padding:4px 10px;border:2px solid #aaa;}
+.log-panel{top:16px;right:16px;width:290px;height:120px;background:rgba(0,0,0,0.55);border:2px solid #aaa;padding:8px;overflow-y:auto;font-size:13px;}
+.log-panel div{margin:3px 0;}
+.hp-ui{position:absolute;bottom:160px;width:100%;}
+.hp-item{position:absolute;bottom:0;transform:translateX(-50%);text-align:center;transition:0.3s opacity;}
+#hpPlayer{left:25%;}
+#hpGuardA{left:75%;}
+#hpGuardB{left:75%;}
+.hp-name{margin-bottom:4px;font-size:15px}
+.hp-bar{width:140px;height:14px;border:1px solid #fff;background:#222;overflow:hidden;}
+.hp-fill{height:100%;background:linear-gradient(90deg,#4caf50,#8bc34a);transition:0.25s}
+.bottom-menu{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px}
+.bottom-menu button{width:120px;height:50px;font-size:17px;border:none;border-radius:4px;background:#223;color:#fff;cursor:pointer;border:2px solid #888}
+.bottom-menu button:disabled{background:#444;color:#888;cursor:not-allowed}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;display:flex;align-items:center;justify-content:center;}
+.modal-box{background:#111;border:2px solid #ccc;padding:24px;max-width:520px}
+.modal-box h3{margin-bottom:14px}
+.modal-box p{line-height:1.6;margin-bottom:10px}
+.modal-btn-group{margin-top:20px;display:flex;gap:12px;justify-content:flex-end}
+.modal-btn{padding:8px 18px;font-size:16px;cursor:pointer}
+.hide{display:none !important}
+.flash{
+    filter: brightness(2.6);
+}
+@media (max-width:560px){
+    .log-panel{width:200px;height:90px;font-size:11px;top:80px;right:8px;}
+    .info-top{left:8px;}
+    .bottom-menu{gap:6px;flex-wrap:wrap;justify-content:center;width:100%;}
+    .bottom-menu button{width:62px;height:40px;font-size:14px;}
+    .hp-bar{width:84px;height:12px;}
+    .hp-ui{bottom:140px;}
+    .modal-box{max-width:calc(100vw - 32px);}
+}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+    <div class="ui-box info-top">
+        <div class="turn-info">回合 <span id="turnNum">1</span> · <span id="turnState"></span></div>
+        <div class="def-info">防御剩余次数：<span id="defCount">3</span></div>
+        <div class="def-info">状态：<span id="buffInfo">—</span></div>
+    </div>
+    <div class="ui-box log-panel" id="logBox"></div>
+    <div class="hp-ui">
+        <div class="hp-item" id="hpPlayer">
+            <div class="hp-name" id="playerNameLabel"></div>
+            <div class="hp-bar"><div class="hp-fill" id="playerHpBar"></div></div>
+            <div id="playerHpText"></div>
+        </div>
+        <div class="hp-item" id="hpGuardA">
+            <div class="hp-name" id="guardAName">守卫A</div>
+            <div class="hp-bar"><div class="hp-fill" id="guardAHpBar"></div></div>
+            <div id="guardAHpText"></div>
+        </div>
+        <div class="hp-item" id="hpGuardB">
+            <div class="hp-name" id="guardBName">守卫B</div>
+            <div class="hp-bar"><div class="hp-fill" id="guardBHpBar"></div></div>
+            <div id="guardBHpText"></div>
+        </div>
+    </div>
+    <div class="bottom-menu">
+        <button id="btnAttack">攻击</button>
+        <button id="btnItem">道具</button>
+        <button id="btnDef">防御</button>
+        <button id="btnAuto">自动</button>
+        <button id="btnCancel">取消</button>
+    </div>
+</div>
+<div class="modal hide" id="targetModal">
+    <div class="modal-box">
+        <h3>选择攻击目标</h3>
+        <div style="display:flex;gap:12px;margin-top:12px" id="targetBtnWrap">
+            <!-- 动态渲染目标按钮 -->
+        </div>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="closeTargetBtn">取消</button>
+        </div>
+    </div>
+</div>
+<div class="modal" id="ruleModal">
+    <div class="modal-box">
+        <h3>【战斗规则】</h3>
+        <p>1. 行动顺序由双方速度决定，轮到你的回合可以自由操作</p>
+        <p>2. 防御次数有限（装备符文装甲原型可+1次），<b>同一回合可以先开启防御，再进行攻击</b>，攻击正常生效，本回合敌人对你造成的伤害大幅降低</p>
+        <p>3. 不同敌人血量与攻击不同，善用防御与道具</p>
+        <p>4. 点击【道具】可以查看可用道具，选择道具后确认是否使用</p>
+        <p>5. 击败所有敌人获得胜利；自己血量归零则战斗失败</p>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="ruleConfirmBtn">确认，开始战斗</button>
+        </div>
+    </div>
+</div>
+<div class="modal hide" id="itemModal">
+    <div class="modal-box">
+        <h3>道具列表</h3>
+        <div id="itemListBox"></div>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="closeItemBtn">关闭</button>
+        </div>
+    </div>
+</div>
+<div class="modal hide" id="itemConfirmModal">
+    <div class="modal-box">
+        <p id="itemTipText"></p>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="itemUseYes">确认使用</button>
+            <button class="modal-btn" id="itemUseNo">取消</button>
+        </div>
+    </div>
+</div>
+<div class="modal hide" id="endModal">
+    <div class="modal-box">
+        <h3 id="endTitle"></h3>
+        <p id="endText"></p>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="endBtnBack">返回剧情</button>
+        </div>
+    </div>
+</div>
+<div class="modal hide" id="cancelModal">
+    <div class="modal-box">
+        <h3>取消战斗？</h3>
+        <p>确定要取消吗？老地精会掉头就走，今天不再跟你交易。</p>
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="cancelYes">确定取消</button>
+            <button class="modal-btn" id="cancelNo">继续战斗</button>
+        </div>
+    </div>
+</div>
+<audio id="bgm" loop>
+    <source src="../audios/battle.mp3" type="audio/mpeg">
+</audio>
+<audio id="atkSfx">
+    <source src="../audios/click2.mp3" type="audio/mpeg">
+</audio>
+<script>
+const hpPlayer = document.getElementById("hpPlayer");
+const hpGuardA = document.getElementById("hpGuardA");
+const hpGuardB = document.getElementById("hpGuardB");
+document.getElementById("bgm").volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_bgm_volume") || "1")));
+const targetBtnWrap = document.getElementById("targetBtnWrap");
+const mode = new URLSearchParams(window.location.search).get("mode");
+const currentUser = localStorage.getItem("feather_erosion_current_user");
+const playerName = currentUser || "游客玩家";
+const flagStorage = currentUser ? localStorage : sessionStorage;
+
+// 从剧情背包读取战斗道具数量与被动标志（用完即无）
+function loadBattleData(){
+    if(!mode){
+        return {
+            items:{ basicPotion:1, runePack:0, antiPotion:0, purifier:0, liquor:0, alchemyBomb:1,
+                    runeShield:0, cleanMoss:0, halfMoss:0 },
+            armorPrototype:false, fatherTalisman:false, antiAmulet:false
+        };
+    }
+    try{
+        const flagKey = "feather_erosion_" + mode + "_flags_" + (currentUser || "guest");
+        const raw = flagStorage.getItem(flagKey);
+        if(!raw) return { items:{}, armorPrototype:false, fatherTalisman:false, antiAmulet:false };
+        const flags = JSON.parse(raw);
+        const inv = flags.inventory || {};
+        return {
+            items:{
+                basicPotion: inv.basicPotion || 0,
+                runePack: inv.runePack || 0,
+                antiPotion: inv.antiPotion || 0,
+                purifier: inv.purifier || 0,
+                liquor: inv.liquor || 0,
+                alchemyBomb: inv.alchemyBomb || 0,
+                runeShield: inv.runeShield || 0,
+                cleanMoss: (inv.cleanMoss || 0) + (inv.purifiedMoss || 0),
+                halfMoss: (inv.halfMoss || 0) + (inv.halfPurifiedMoss || 0)
+            },
+            armorPrototype: !!flags.armorPrototype || (inv.armorPrototype || 0) > 0,
+            fatherTalisman: !!flags.fatherTalisman || (inv.fatherTalisman || 0) > 0,
+            antiAmulet: (inv.antiAmulet || 0) > 0 || !!flags.antiAmulet
+        };
+    }catch(e){
+        return { items:{}, armorPrototype:false, fatherTalisman:false, antiAmulet:false };
+    }
+}
+const battleData = loadBattleData();
+
+const hpParam = new URLSearchParams(window.location.search).get("hp");
+const initialHp = (hpParam === null || isNaN(Number(hpParam))) ? 100 : Math.max(0, Math.min(100, Number(hpParam)));
+const player = {
+    name:playerName,hp:initialHp,maxHp:100,atk:24,def:6,speed:14,defFlash:false
+}
+// 敌人配置表：不同 battle 对应不同敌人（名称/血量/攻击）
+const BATTLE_DATA = {
+    isolation:    { enemies:[{name:"晶骸",hp:65,atk:15,def:5,speed:8}] },
+    rift:         { enemies:[{name:"深暗晶骸",hp:90,atk:18,def:6,speed:9}] },
+    deer:         { enemies:[{name:"晶化幼鹿",hp:50,atk:13,def:3,speed:12}] },
+    sky_gate:     { enemies:[{name:"天空守卫甲",hp:72,atk:14,def:6,speed:10},{name:"天空守卫乙",hp:58,atk:15,def:4,speed:12}] },
+    sky_final:    { enemies:[{name:"索尔温·巨兽",hp:140,atk:22,def:8,speed:7}] },
+    gate:         { enemies:[{name:"帝国卫兵甲",hp:72,atk:14,def:6,speed:9},{name:"帝国卫兵乙",hp:56,atk:15,def:4,speed:11}] },
+    warehouse:    { enemies:[{name:"晶化晶骸",hp:95,atk:19,def:7,speed:8}] },
+    final:        { enemies:[{name:"索尔温·巨兽",hp:140,atk:22,def:8,speed:7}] },
+    forest_patrol:{ enemies:[{name:"精灵巡逻者甲",hp:64,atk:13,def:6,speed:11},{name:"精灵巡逻者乙",hp:52,atk:14,def:4,speed:13}] },
+    forest_final: { enemies:[{name:"索尔温·巨兽",hp:140,atk:22,def:8,speed:7}] },
+    gate_battle:  { enemies:[{name:"地精卫兵甲",hp:62,atk:13,def:5,speed:12},{name:"地精卫兵乙",hp:50,atk:14,def:4,speed:14}] },
+    cargo_battle: { enemies:[{name:"晶骸",hp:70,atk:16,def:5,speed:9}] },
+    lab_battle:   { enemies:[{name:"晶化卫兵",hp:100,atk:21,def:7,speed:9}] },
+    final_battle: { enemies:[{name:"索尔温·巨兽",hp:140,atk:22,def:8,speed:7}] },
+    haggle:       { enemies:[{name:"老地精",hp:100,atk:16,def:6,speed:11}] }
+};
+
+// 污染环境战斗：每回合持续掉血，可用烈酒解除、抗污护符免疫
+const POLLUTED_BATTLES = { isolation:1, rift:1, deer:1, warehouse:1, lab_battle:1, sky_final:1, final:1, forest_final:1, final_battle:1 };
+// Boss 战：父亲的护符可抵挡一次致命伤
+const BOSS_BATTLES = { sky_final:1, final:1, forest_final:1, final_battle:1 };
+
+// ========== 战斗背景配置 ==========
+const BATTLE_BG = {
+    isolation:     "../images/battle/jinghai.jpg",   // 隔离区晶骸
+    rift:          "../images/battle/jinghai.jpg",   // 深暗裂隙
+    deer:          "../images/battle/youlu.jpg",   // 晶化幼鹿
+    sky_gate:      "../images/battle/sky.jpg",   // 天空之城城门
+    sky_final:     "../images/battle/end2.jpg",   // 天空终局
+    gate:          "../images/battle/empire.jpg",   // 帝国城门
+    warehouse:     "../images/battle/empire2.jpg",   // 帝国仓库
+    final:         "../images/battle/end.jpg",   // 帝国终局
+    forest_patrol: "../images/battle/forest.jpg",   // 森林巡逻
+    forest_final:  "../images/battle/end2.jpg",   // 森林终局
+    gate_battle:   "../images/battle/under.jpg",   // 地下铁门
+    cargo_battle:  "../images/battle/1.jpg",   // 地下矿道
+    lab_battle:    "../images/battle/2.jpg",   // 地下实验室
+    final_battle:  "../images/battle/end.jpg",   // 地下终局
+    haggle:        "../images/battle/dijing.jpg"    // 老地精讲价战
+};
+
+const battleParam = new URLSearchParams(window.location.search).get("battle");
+const isHaggle = battleParam === "haggle";  // 老地精讲价战：可取消、失败无损
+let polluted = !!POLLUTED_BATTLES[battleParam] && !battleData.antiAmulet;  // 污染侵蚀（可被烈酒解除）
+const fatherTalismanActive = !!battleData.fatherTalisman && !!BOSS_BATTLES[battleParam];
+const battleBg = BATTLE_BG[battleParam];
+if(battleBg){
+    document.getElementById("gameWrap").style.backgroundImage = `url("${battleBg}")`;
+}
+const battleCfg = BATTLE_DATA[battleParam] || {
+    enemies:[
+        {name:"守卫A",hp:90,atk:15,def:8,speed:9},
+        {name:"守卫B",hp:60,atk:18,def:4,speed:11}
+    ]
+};
+let enemies = battleCfg.enemies.map(function(e){
+    return { name:e.name, hp:e.hp, maxHp:e.hp, atk:e.atk, def:e.def, speed:e.speed, defFlash:false };
+});
+// 敌人血条水平定位：1个敌人→右半屏中间(75%)；2个敌人→右半屏四等分中间两份(68.75%/81.25%)
+(function layoutEnemyHp(){
+    const narrow = window.innerWidth < 560;
+    if(enemies.length >= 2){
+        hpGuardA.style.left = narrow ? "62%" : "68.75%";
+        hpGuardB.style.left = narrow ? "86%" : "81.25%";
+    } else {
+        hpGuardA.style.left = narrow ? "70%" : "75%";
+        hpGuardB.style.left = narrow ? "70%" : "75%";
+    }
+})();
+let allUnits = [player].concat(enemies);
+let itemBag = [
+    {id:"basicPotion",name:"基础治疗药剂",desc:"回复10点生命值",type:"heal",val:10,count:battleData.items.basicPotion},
+    {id:"runePack",name:"符文治疗包",desc:"回复25点生命值",type:"heal",val:25,count:battleData.items.runePack},
+    {id:"antiPotion",name:"抗污药剂",desc:"3回合内受到的伤害减半",type:"reduce",factor:0.5,count:battleData.items.antiPotion},
+    {id:"purifier",name:"污染净化器",desc:"抵挡一次攻击",type:"block",count:battleData.items.purifier},
+    {id:"liquor",name:"烈酒",desc:"解除污染侵蚀，回复5点生命值",type:"cleanse",val:5,count:battleData.items.liquor},
+    {id:"alchemyBomb",name:"炼金炸弹",desc:"对所有敌人造成25点伤害",type:"bomb",val:25,count:battleData.items.alchemyBomb},
+    {id:"runeShield",name:"符文护盾",desc:"抵挡一次伤害",type:"block",count:battleData.items.runeShield},
+    {id:"cleanMoss",name:"净化苔藓",desc:"抵挡一次攻击",type:"block",count:battleData.items.cleanMoss},
+    {id:"halfMoss",name:"半净化的苔藓",desc:"3回合内受到的伤害降低25%",type:"reduce",factor:0.75,count:battleData.items.halfMoss}
+];
+let turnIndex = 0;
+let turn = 1;
+let defendRemain = 3 + (battleData.armorPrototype ? 1 : 0);  // 符文装甲原型：防御次数+1
+let turnUseDef = false;
+let busy = false;
+let gameStart = false;
+// 新增战斗状态：抵挡次数 / 减伤回合 / 致命保护
+let blockCharges = 0;
+let reduceTurns = 0;
+let reduceFactor = 1;      // 减伤系数（1=无减伤）
+let fatherTalismanUsed = false;
+const ruleModal = document.getElementById("ruleModal");
+const targetModal = document.getElementById("targetModal");
+const itemModal = document.getElementById("itemModal");
+const itemConfirmModal = document.getElementById("itemConfirmModal");
+const endModal = document.getElementById("endModal");
+const logBox = document.getElementById("logBox");
+const turnNum = document.getElementById("turnNum");
+const turnState = document.getElementById("turnState");
+const defCount = document.getElementById("defCount");
+const buffInfo = document.getElementById("buffInfo");
+document.getElementById("playerNameLabel").textContent = playerName;
+turnState.textContent = playerName + "行动";
+const itemListBox = document.getElementById("itemListBox");
+const itemTipText = document.getElementById("itemTipText");
+const btnAttack = document.getElementById("btnAttack");
+const btnItem = document.getElementById("btnItem");
+const btnDef = document.getElementById("btnDef");
+const btnAuto = document.getElementById("btnAuto");
+const btnCancel = document.getElementById("btnCancel");
+btnCancel.style.display = isHaggle ? "" : "none";
+
+let iswin = "false";
+let endedNoLoss = false;
+
+function addLog(text){
+    const div = document.createElement("div");
+    div.textContent = text;
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+// 敌人 HP 槽位（最多 2 个，1 个敌人时隐藏第二个）
+const enemySlots = [
+    { box:hpGuardA, name:document.getElementById("guardAName"), bar:document.getElementById("guardAHpBar"), text:document.getElementById("guardAHpText") },
+    { box:hpGuardB, name:document.getElementById("guardBName"), bar:document.getElementById("guardBHpBar"), text:document.getElementById("guardBHpText") }
+];
+function refreshUI(){
+    document.getElementById("playerHpBar").style.width = `${player.hp/player.maxHp*100}%`;
+    document.getElementById("playerHpText").textContent = `${player.hp}/${player.maxHp}`;
+    for(let i=0;i<enemySlots.length;i++){
+        const slot = enemySlots[i];
+        const e = enemies[i];
+        if(!e){
+            slot.box.style.display = "none";
+            continue;
+        }
+        slot.box.style.display = "";
+        slot.name.textContent = e.name;
+        slot.bar.style.width = `${e.hp/e.maxHp*100}%`;
+        slot.text.textContent = `${e.hp}/${e.maxHp}`;
+        slot.box.style.opacity = e.hp <= 0 ? "0" : "1";
+    }
+    turnNum.textContent = turn;
+    defCount.textContent = defendRemain;
+    const buf = [];
+    if(polluted) buf.push("污染侵蚀");
+    if(blockCharges > 0) buf.push("抵挡×"+blockCharges);
+    if(reduceTurns > 0) buf.push("减伤×"+reduceTurns);
+    buffInfo.textContent = buf.length ? buf.join(" · ") : "—";
+    btnDef.disabled = busy || defendRemain <= 0 || !gameStart || turnUseDef;
+    btnAttack.disabled = busy || !gameStart;
+    btnItem.disabled = busy || !gameStart;
+    btnAuto.disabled = busy || !gameStart;
+    btnCancel.disabled = !gameStart;
+}
+// 获取存活敌人数组
+function getAliveEnemies(){
+    return enemies.filter(function(e){ return e.hp > 0; });
+}
+// 敌人是否全部倒下
+function allEnemiesDead(){
+    return enemies.every(function(e){ return e.hp <= 0; });
+}
+// 动态生成目标选择按钮
+function renderTargetSelect(){
+    targetBtnWrap.innerHTML = "";
+    let alive = getAliveEnemies();
+    alive.forEach(g=>{
+        let b = document.createElement("button");
+        b.className = "modal-btn";
+        b.textContent = g.name;
+        b.onclick = ()=>{
+            targetModal.classList.add("hide");
+            playerAttack(g);
+        }
+        targetBtnWrap.appendChild(b);
+    })
+}
+function flashTarget(obj){
+    obj.defFlash = true;
+    setTimeout(()=>{
+        obj.defFlash=false;
+        refreshUI();
+    },220)
+}
+function sortUnits(){
+    allUnits = [player].concat(enemies).filter(u=>u.hp>0).sort((a,b)=>b.speed-a.speed);
+}
+function nextTurn(){
+    sortUnits();
+    if(allUnits.length <=1){
+        judgeEnd();
+        return;
+    }
+    if(turnIndex >= allUnits.length){
+        turnIndex =0;
+        turn++;
+    }
+    const current = allUnits[turnIndex];
+    if(current === player){
+        turnState.textContent = playerName + "行动";
+        turnUseDef = false;
+        busy = false;
+        // 污染侵蚀：每回合流失 2 点生命（最低降至 1，不因污染致死）
+        if(polluted){
+            const drain = Math.min(2, player.hp - 1);
+            if(drain > 0){
+                player.hp -= drain;
+                addLog(`污染侵蚀，流失${drain}点生命！`);
+            }
+        }
+        refreshUI();
+    }else{
+        turnState.textContent = current.name+"行动";
+        busy = true;
+        refreshUI();
+        setTimeout(()=>enemyAction(current),900);
+    }
+}
+function enemyAction(enemy){
+    if(enemy.hp <=0){
+        turnIndex++;
+        nextTurn();
+        return;
+    }
+    const target = player;
+    let dmg = Math.max(1,enemy.atk - Math.floor(target.def/2));
+    let guarded = false;
+    let reduced = false;
+    // 抵挡：完全抵消一次攻击
+    if(blockCharges > 0){
+        blockCharges--;
+        dmg = 0;
+        guarded = true;
+    }
+    // 减伤：reduceTurns 内按系数降低伤害
+    if(!guarded && reduceTurns > 0){
+        dmg = Math.max(0, Math.floor(dmg * reduceFactor));
+        reduceTurns--;
+        reduced = true;
+    }
+    if(target.defending) dmg = Math.floor(dmg*0.1);
+    target.hp -= dmg;
+    let note = guarded ? "【抵挡生效，伤害被抵消】"
+             : target.defending ? "【防御生效，伤害降低】"
+             : reduced ? "【减伤生效】" : "";
+    addLog(`${enemy.name}发起攻击，造成${dmg}点伤害！${note}`);
+    flashTarget(player);
+    target.defending = false;
+    refreshUI();
+    if(player.hp <= 0){
+        // 父亲的护符：Boss 战抵挡一次致命伤
+        if(fatherTalismanActive && !fatherTalismanUsed){
+            fatherTalismanUsed = true;
+            player.hp = 1;
+            addLog("【父亲的护符】亮起，为你挡住了致命一击！");
+            flashTarget(player);
+            refreshUI();
+        }else{
+            busy = true;
+            judgeEnd();
+            return;
+        }
+    }
+    turnIndex++;
+    setTimeout(nextTurn,800);
+}
+function playerAttack(target){
+    busy = true;
+    const sfx = document.getElementById("atkSfx");
+    sfx.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_sfx_volume") || "1")));
+    sfx.currentTime = 0;
+    sfx.play().catch(e=>{});
+    addLog(`${playerName}发起攻击！${turnUseDef?"【同时开启防御】":""}`);
+    let dmg = Math.max(1,player.atk - Math.floor(target.def/2));
+    target.hp -= dmg;
+    addLog(`${target.name}受到${dmg}伤害`);
+    flashTarget(target);
+    player.defending = turnUseDef;
+    refreshUI();
+    if(allEnemiesDead()){
+        busy = true;
+        judgeEnd();
+        return;
+    }
+    turnIndex++;
+    setTimeout(nextTurn,800);
+}
+function openItemPanel(){
+    itemListBox.innerHTML = "";
+    itemBag.forEach((it,idx)=>{
+        const div = document.createElement("div");
+        div.style="margin:8px 0;cursor:pointer;padding:6px;border:1px solid #555";
+        div.innerHTML = `<b>${it.name}</b> ×${it.count}<br>${it.desc}`;
+        if(it.count <=0) div.style.color="#777";
+        div.onclick = ()=>{
+            if(it.count<=0) return;
+            itemTipText.textContent = `是否使用【${it.name}】：${it.desc}`;
+            itemModal.classList.add("hide");
+            itemConfirmModal.classList.remove("hide");
+            itemConfirmModal.dataset.idx = idx;
+        }
+        itemListBox.appendChild(div);
+    })
+    itemModal.classList.remove("hide");
+}
+function useItem(idx){
+    const it = itemBag[idx];
+    if(it.count <=0) return;
+    it.count--;
+    if(it.type === "heal"){
+        player.hp = Math.min(player.maxHp,player.hp + it.val);
+        addLog(`使用${it.name}，恢复${it.val}点生命值`);
+    }else if(it.type === "bomb"){
+        enemies.forEach(function(e){
+            if(e.hp > 0){
+                e.hp -= it.val;
+                flashTarget(e);
+            }
+        });
+        addLog(`投掷${it.name}，所有敌人受到${it.val}点伤害！`);
+        if(allEnemiesDead()){
+            busy = true;
+            setTimeout(judgeEnd,300);
+        }
+    }else if(it.type === "block"){
+        blockCharges++;
+        addLog(`使用${it.name}，将抵挡下一次攻击`);
+    }else if(it.type === "reduce"){
+        reduceTurns = 3;
+        reduceFactor = it.factor;
+        addLog(`使用${it.name}，3回合内受到的伤害${it.factor===0.5?"减半":"降低25%"}`);
+    }else if(it.type === "cleanse"){
+        if(polluted){
+            polluted = false;
+            addLog(`使用${it.name}，解除污染侵蚀，恢复${it.val}点生命值`);
+        }else{
+            addLog(`使用${it.name}，恢复${it.val}点生命值`);
+        }
+        player.hp = Math.min(player.maxHp, player.hp + it.val);
+    }
+    refreshUI();
+}
+function judgeEnd(){
+    if(player.hp <=0){
+        if(isHaggle) endedNoLoss = true;
+        document.getElementById("endTitle").textContent = "战斗失败";
+        document.getElementById("endText").textContent = playerName + "倒下了。";
+    }else{
+        iswin=true;
+        document.getElementById("endTitle").textContent = "战斗胜利";
+        document.getElementById("endText").textContent = "成功击败敌人。";
+        localStorage.setItem("skyFightWin","1");
+    }
+    endModal.classList.remove("hide");
+}
+btnAttack.onclick = ()=>{
+    if(busy) return;
+    let alive = getAliveEnemies();
+    if(alive.length === 1){
+        // 只剩一个存活守卫，直接攻击，不弹出选择窗口
+        playerAttack(alive[0]);
+    }else if(alive.length >1){
+        // 两个都活着，弹出目标选择弹窗
+        renderTargetSelect();
+        targetModal.classList.remove("hide");
+    }
+}
+document.getElementById("closeTargetBtn").onclick = ()=>{
+    targetModal.classList.add("hide");
+}
+document.getElementById("ruleConfirmBtn").onclick = ()=>{
+    ruleModal.classList.add("hide");
+    gameStart = true;
+    document.getElementById("bgm").play().catch(e=>{});
+    addLog("战斗开始！");
+    refreshUI();
+    nextTurn();
+}
+btnDef.onclick = ()=>{
+    // 本回合已经使用过防御时，不允许再次使用
+    if(defendRemain <= 0 || busy || turnUseDef) return;
+
+    turnUseDef = true;
+    defendRemain--;
+    addLog("开启本回合防御，剩余次数："+defendRemain);
+    refreshUI();
+}
+btnItem.onclick = openItemPanel;
+document.getElementById("closeItemBtn").onclick = ()=>{
+    itemModal.classList.add("hide");
+}
+document.getElementById("itemUseYes").onclick = ()=>{
+    const idx = Number(itemConfirmModal.dataset.idx);
+    useItem(idx);
+    itemConfirmModal.classList.add("hide");
+    openItemPanel();
+}
+document.getElementById("itemUseNo").onclick = ()=>{
+    itemConfirmModal.classList.add("hide");
+}
+btnAuto.onclick = ()=>{
+    if(busy) return;
+
+    // 自动操作也遵守“每回合最多使用一次防御”
+    if(defendRemain > 0 && !turnUseDef){
+        turnUseDef = true;
+        defendRemain--;
+        addLog("自动：开启防御，剩余次数："+defendRemain);
+    }
+
+    let alive = getAliveEnemies();
+    playerAttack(alive[0]);
+}
+// 战斗结束把剩余道具数量写回剧情背包
+function saveBattleItems(){
+    if(!mode) return;
+    try{
+        const flagKey = "feather_erosion_" + mode + "_flags_" + (currentUser || "guest");
+        const raw = flagStorage.getItem(flagKey);
+        if(!raw) return;
+        const flags = JSON.parse(raw);
+        if(!flags.inventory) flags.inventory = {};
+        itemBag.forEach(function(it){
+            if(it.count > 0) flags.inventory[it.id] = it.count;
+            else delete flags.inventory[it.id];
+        });
+        // 苔藓合并：森林线的 purifiedMoss/halfPurifiedMoss 并入 cleanMoss/halfMoss
+        delete flags.inventory.purifiedMoss;
+        delete flags.inventory.halfPurifiedMoss;
+        flagStorage.setItem(flagKey, JSON.stringify(flags));
+    }catch(e){}
+}
+function returnToStory(){
+    document.getElementById("bgm").pause();
+    const noLoss = isHaggle && endedNoLoss;
+    if(!noLoss) saveBattleItems();
+    const hpBack = noLoss ? initialHp : player.hp;
+    // under 线最终战斗失败 = 格里姆挡刀死亡，进「拂晓的消散」结局
+    const result = (iswin === "false" && battleParam === "final_battle") ? "grim_dead" : iswin;
+    fadeNav(`story-${mode}.html?iswin3=${result}&hp=${hpBack}`);
+}
+document.getElementById("endBtnBack").onclick = returnToStory;
+
+// 老地精讲价战：取消（逃跑）按钮
+btnCancel.onclick = ()=>{
+    if(!gameStart) return;
+    document.getElementById("cancelModal").classList.remove("hide");
+};
+document.getElementById("cancelYes").onclick = ()=>{
+    document.getElementById("cancelModal").classList.add("hide");
+    iswin = "cancel";
+    endedNoLoss = true;
+    returnToStory();
+};
+document.getElementById("cancelNo").onclick = ()=>{
+    document.getElementById("cancelModal").classList.add("hide");
+};
+refreshUI();
+</script>
+</body>
+</html>

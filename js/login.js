@@ -41,15 +41,15 @@ loginButton.addEventListener("click", function ()
 guestButton.addEventListener("click", function ()
 {
     logoutUser();
-    window.location.href = "mainmenu.html";
+    clickNav("mainmenu.html");
 });
 
 registerButton.addEventListener("click", function ()
 {
-    window.location.href = "register.html";
+    clickNav("register.html");
 });
 
 homeButton.addEventListener("click", function ()
 {
-    window.location.href = "../index.html";
+    clickNav("../index.html");
 });

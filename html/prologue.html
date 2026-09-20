@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script src="../js/transition.js"></script>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羽蚀纪：天空的悼亡曲</title>
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/story.css">
 </head>
 <body>
-    <button id="exit-game-button" class="exit-game-button">退出游戏</button>
+    <button id="exit-game-button" class="exit-game-button" title="设置" aria-label="设置"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg></button>
+    <div class="settings-overlay" id="settingsOverlay" hidden>
+        <div class="settings-modal">
+            <h2 class="settings-title">设置</h2>
+            <div class="settings-volume">
+                <span class="settings-volume-label">音乐音量</span>
+                <input type="range" id="bgmVolume" min="0" max="100" value="100" step="1" />
+            </div>
+            <div class="settings-volume">
+                <span class="settings-volume-label">音效音量</span>
+                <input type="range" id="sfxVolume" min="0" max="100" value="100" step="1" />
+            </div>
+            <button class="settings-btn" id="settingsContinue" type="button">返回游戏</button>
+            <button class="settings-btn settings-btn-danger" id="settingsSaveExit" type="button">保存并退出</button>
+            <button class="settings-btn settings-btn-danger" id="settingsRestart" type="button">重新开始</button>
+        </div>
+    </div>
 <div class="story-wrap">
-    <div class="bg-layer" style="background-image:url('../images/bg_prologue.jpg')"></div>
-
-    <div class="cg-block" id="cgDom">
-        <div class="cg-tip-text">【序章开篇CG】</div>
-        <div class="skip-hint">点击画面任意位置跳过</div>
+    <!-- 动态背景视频 -->
+    <video id="storyBgVideo" class="story-bg-video" playsinline></video>
+    <!-- 独立剧情视频 -->
+    <div class="video-block" id="videoBlock">
+        <video id="storyVideo" playsinline></video>
+        <div class="skip-video">点击画面或按 Enter / Space / → 跳过</div>
     </div>
 
     <div class="char-silhouette-wrap">
@@ -23,11 +42,16 @@
     <div class="story-box" id="textDom"></div>
     <div class="option-box" id="choiceDom"></div>
 
-    <div class="hint" id="hint">点击Enter/ Space/ ▸键 继续</div>
+    <div id="storyBg" class="story-bg"></div>
+
+    <div class="hint" id="hint">点击画面 / Enter / Space / ▸键 继续</div>
 </div>
 
 <script src="../js/auth.js"></script>
 <script src="../js/save.js"></script>
+<script src="../js/bgm.js"></script>
+<script src="../js/click.js"></script>
+<script src="../js/turn.js"></script>
 <script src="../js/prologue.js"></script>
 </body>
 </html>

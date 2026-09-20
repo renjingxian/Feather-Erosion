@@ -1,7 +1,6 @@
 const mode = new URLSearchParams(window.location.search).get("mode");
 const cnt = new URLSearchParams(window.location.search).get("cnt");
 let time = Number (new URLSearchParams(window.location.search).get("time"));
-const mainplot = document.getElementById("mainplot");
 const backmap = document.getElementById("backmap");
 //sky
 const yun = document.getElementById("yun");
@@ -13,6 +12,7 @@ const fu = document.getElementById("fu");
 const wu = document.getElementById("wu");
 const lao = document.getElementById("lao");
 const hei = document.getElementById("hei");
+const trial = document.getElementById("trial");
 //under
 const hui = document.getElementById("hui");
 const kuang = document.getElementById("kuang");
@@ -30,35 +30,24 @@ const dong = document.getElementById("dong");
 const zhao = document.getElementById("zhao");
 
 const apText = document.getElementById("apText");
-const achievements = document.getElementById("achievements");
-const things = document.getElementById("things");
-const place = [yun, feng, shi, yu, fu, wu, lao, hei, hui, kuang, tong, jiu, di, shen, hu, de, chen, gen, sheng, dong, zhao];
+const place = [yun, feng, shi, yu, trial, fu, wu, lao, hei, hui, kuang, tong, jiu, di, shen, hu, de, chen, gen, sheng, dong, zhao];
 
 apText.textContent = 4-time;//剩余行动点显示
 
 //回主地图重选
 backmap.addEventListener("click", function () 
 {
-    window.location.href = `map.html?mode=${mode}&cnt=${cnt}&time=${time}`;
+    turnNav(`map.html?mode=${mode}&cnt=${cnt}&time=${time}`);
 });
 
 //回剧情
 place.forEach(function(place) {
     if (place==null) return;
-    place.addEventListener("click", function () 
+    place.addEventListener("click", function ()
     {
-        window.location.href = `story-${mode}.html?from=${place.id}&cnt=${cnt}&time=${time}`;
+        turnNav(`story-${mode}.html?from=${place.id}&cnt=${cnt}&time=${time}`);
     });
 });
 
-//查看成就
-achievements.addEventListener("click", function () 
-{
-    window.location.href = `achievements.html?mode=${mode}&cnt=${cnt}&time=${time}`;
-});
+BGM.play();
 
-//查看物品
-things.addEventListener("click", function () 
-{
-    window.location.href = `things.html?mode=${mode}&cnt=${cnt}&time=${time}`;
-});

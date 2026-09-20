@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script src="../js/transition.js"></script>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羽蚀纪｜帝国城邦地图</title>
     <link rel="stylesheet" href="../css/common.css">
     <style>
@@ -19,6 +21,15 @@
             width:100vw;
             height:100vh;
             position:relative;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:#000;
+        }
+        .map-stage{
+            position:relative;
+            width:min(100%, calc(100vh * 16 / 9));
+            aspect-ratio:16/9;
         }
         .empire-map-img{
             width:100%;
@@ -50,10 +61,48 @@
             z-index:10;
         }
         .btn-back{
-            bottom:90px;
+            bottom:120px;
         }
+        /* 成就系统按钮 */
         .btn-ach{
+            position:absolute;
+            left:30px;
             bottom:30px;
+            width:70px;
+            height:70px;
+            z-index:9999;
+            cursor:pointer;
+            transition:transform 0.2s ease;
+        }
+        .btn-ach img{
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            display:block;
+        }
+        .btn-ach:hover{
+            transform:scale(1.08);
+        }
+        .achievement-tip{
+            position:absolute;
+            top:50%;
+            left:80px;
+            transform:translateY(-50%);
+            white-space:nowrap;
+            padding:7px 12px;
+            background:rgba(10,12,18,0.92);
+            border:1px solid var(--gold-dim);
+            border-radius:4px;
+            color:var(--text);
+            font-size:14px;
+            opacity:0;
+            visibility:hidden;
+            pointer-events:none;
+            transition:opacity 0.2s ease;
+        }
+        .btn-ach:hover .achievement-tip{
+            opacity:1;
+            visibility:visible;
         }
         .btn-item{
             bottom:30px;
@@ -102,10 +151,8 @@
 </head>
 <body>
     <div class="map-wrap">
+        <div class="map-stage">
         <img src="../images/empire.jpg" alt="帝国城邦地图" class="empire-map-img">
-        <div class="action-hud">剩余行动点：<span id="apText">4</span></div>
-        <!--主线：蒸汽议会厅（地图中央标签，不消耗行动点）-->
-        <div class="hotspot" style="top:22%;left:43%;" id="mainplot"></div>
         <!--符文工坊 左上标签-->
         <div class="hotspot" style="top:5.6%;left:9%;" id="fu"></div>
         <!--污染隔离区 右上标签【继续下移，改为top16%】-->
@@ -114,11 +161,17 @@
         <div class="hotspot" style="top:71%;left:14%;" id="lao"></div>
         <!--黑市巷道 右下标签-->
         <div class="hotspot" style="top:74%;left:87%;" id="hei"></div>
+        </div>
+        <div class="action-hud">剩余行动点：<span id="apText">4</span></div>
         <div class="func-btn btn-back" id="backmap">返回世界大地图</div>
-        <div class="func-btn btn-ach" id="achievements">成就</div>
-        <div class="func-btn btn-item" id="things">物品</div>
+        <div class="btn-ach" onclick="turnNav('achievement.html')">
+            <img src="../images/miniachieve.jpg" alt="成就系统">
+            <div class="achievement-tip">成就</div>
+        </div>
     </div>
-    <script src="saveTool.js"></script>
+    <script src="../js/bgm.js"></script>
+    <script src="../js/turn.js"></script>
     <script src="../js/minimap.js"></script>
+    <script src="../js/task.js"></script>
 </body>
 </html>

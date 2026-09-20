@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../js/transition.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>根脉封堵</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#0c1018;
+    color:#fff;
+    font-family:"Microsoft YaHei","微软雅黑",sans-serif;
+}
+#gameWrap{
+    width:100vw;
+    height:100vh;
+    position:relative;
+    display:block;
+    background:url("../images/game7.jpg") no-repeat center center / cover;
+}
+#canvas{
+    border:none;
+    background:transparent;
+    width:100vw;
+    height:100vh;
+}
+.ui-panel{
+    position:absolute;
+    top:14px;
+    left:14px;
+    z-index:10;
+    padding:10px 14px;
+    background:rgba(20,30,18,0.55);
+    border:2px solid #4a6b3a;
+    border-radius:10px;
+    box-shadow:0 0 18px rgba(80,140,60,0.35);
+}
+.info{
+    margin-bottom:6px;
+    font-size:17px;
+    text-shadow:0 0 6px rgba(0,0,0,0.8);
+}
+.info span{
+    color:#c7f59b;
+    font-weight:bold;
+}
+
+.battle-bar-wrap{
+    position:absolute;
+    top:78px;
+    left:50%;
+    transform:translateX(-50%);
+    width:520px;
+    max-width:calc(100vw - 32px);
+    height:28px;
+    border:2px solid #6b8e4e;
+    border-radius:14px;
+    background:#121a10;
+    overflow:hidden;
+    box-shadow:0 0 16px rgba(120,180,80,0.45);
+    display:none;
+    z-index:11;
+}
+.battle-left{
+    height:100%;
+    background:linear-gradient(90deg,#2f6fe0,#5aa9ff);
+    float:left;
+    border-radius:14px 0 0 14px;
+}
+.battle-right{
+    height:100%;
+    background:linear-gradient(90deg,#7a1a1a,#c13535);
+    float:left;
+    border-radius:0 14px 14px 0;
+}
+
+.pop{
+    position:absolute;
+    top:45%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:440px;
+    max-width:calc(100vw - 32px);
+    padding:30px 28px 26px;
+    background:
+        radial-gradient(circle at 30% 20%,rgba(140,200,90,0.18),transparent 45%),
+        radial-gradient(circle at 70% 80%,rgba(90,140,60,0.22),transparent 50%),
+        linear-gradient(180deg,#1e2a18,#141d12);
+    border:2px solid #5d8a44;
+    border-radius:18px;
+    z-index:30;
+    text-align:center;
+    box-shadow:
+        0 0 0 6px rgba(90,140,60,0.12),
+        0 0 40px rgba(60,110,40,0.55),
+        inset 0 0 20px rgba(80,140,60,0.18);
+}
+.pop::before,
+.pop::after{
+    content:"";
+    position:absolute;
+    width:90px;
+    height:90px;
+    background:
+        radial-gradient(circle at center,#6ea94a 0 10%,transparent 11%),
+        radial-gradient(circle at 30% 30%,#8fc465 0 6%,transparent 7%),
+        radial-gradient(circle at 70% 40%,#76b252 0 5%,transparent 6%),
+        radial-gradient(circle at 40% 70%,#9dd372 0 4%,transparent 5%);
+    opacity:0.55;
+    pointer-events:none;
+}
+.pop::before{
+    top:-26px;
+    left:-26px;
+    transform:rotate(-20deg);
+    border-radius:50%;
+}
+.pop::after{
+    bottom:-30px;
+    right:-24px;
+    transform:rotate(25deg);
+    border-radius:50%;
+}
+.pop h2{
+    font-size:24px;
+    color:#eaffd0;
+    text-shadow:0 0 10px rgba(140,220,90,0.75);
+    margin-bottom:14px;
+    letter-spacing:2px;
+}
+.pop p{
+    font-size:15px;
+    line-height:1.7;
+    color:#d7ecc4;
+    text-align:left;
+    margin:6px 4px;
+}
+.pop button{
+    margin-top:18px;
+    padding:10px 22px;
+    font-size:16px;
+    font-weight:bold;
+    color:#1a2a12;
+    background:linear-gradient(180deg,#c8ee9a,#7fbf5a);
+    border:2px solid #4f7a35;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(80,140,60,0.45);
+    transition:0.15s;
+}
+.pop button:hover{
+    background:linear-gradient(180deg,#d9ffad,#92d16a);
+    transform:translateY(-1px);
+}
+#rulePop{
+    width:460px;
+    text-align:left;
+}
+#rulePop h2{
+    text-align:center;
+}
+#popBox{
+    display:none;
+}
+.insect{
+    position:absolute;
+    width:34px;
+    height:22px;
+    z-index:5;
+}
+.insect-body{
+    position:absolute;
+    width:18px;
+    height:12px;
+    background:#38241b;
+    border-radius:50%;
+    left:8px;
+    top:4px;
+}
+.insect-head{
+    position:absolute;
+    width:10px;
+    height:8px;
+    background:#22140f;
+    border-radius:50%;
+    left:0px;
+    top:7px;
+}
+.insect-tail{
+    position:absolute;
+    width:8px;
+    height:7px;
+    background:#442c20;
+    border-radius:50%;
+    right:0px;
+    top:7px;
+}
+.insect-leg{
+    position:absolute;
+    width:10px;
+    height:2px;
+    background:#22140f;
+    border-radius:1px;
+}
+.leg1{left:4px;top:0px;transform:rotate(20deg)}
+.leg2{left:2px;top:20px;transform:rotate(-20deg)}
+.leg3{left:16px;top:0px;transform:rotate(-20deg)}
+.leg4{left:14px;top:20px;transform:rotate(20deg)}
+.leg5{left:24px;top:3px;transform:rotate(-30deg)}
+.leg6{left:22px;top:19px;transform:rotate(30deg)}
+.insect-antenna{
+    position:absolute;
+    width:12px;
+    height:2px;
+    background:#22140f;
+    left:-8px;
+    top:5px;
+    transform-origin:right center;
+}
+.ant1{transform:rotate(25deg)}
+.ant2{transform:rotate(-25deg);top:11px}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+    <canvas id="canvas"></canvas>
+
+    <div class="battle-bar-wrap" id="battleBarWrap">
+        <div class="battle-left" id="barLeft"></div>
+        <div class="battle-right" id="barRight"></div>
+    </div>
+
+    <div class="ui-panel">
+        <div class="info">轮次：<span id="roundText">1</span>/4</div>
+        <div class="info">剩余时间：<span id="timeText">60</span>s</div>
+        <div class="info"><span id="progressLabel">封堵进度</span>：<span id="sealText">0/0</span></div>
+    </div>
+
+    <div class="pop" id="rulePop">
+        <h2>根脉封堵</h2>
+        <p>1. WASD 操控角色在地下根脉间穿行。</p>
+        <p>2. 靠近黑色裂隙并停在裂隙区域内，自动开启拔河对抗。</p>
+        <p>3. 快速敲击空格键增强封堵力量；裂隙会持续侵蚀，把力量向左侧拉扯。</p>
+        <p>4. 蓝色力量推到接近右端，裂隙被封成绿色愈合状态；红色力量压到最左端，对抗失败。</p>
+        <p>5. 离开裂隙区域，对抗立即终止，进度清空。</p>
+        <p>6. 第2关起出现移动虫怪，碰到直接失败；第3关新增巨大裂隙；第四关虫怪与巨型裂隙同时存在。</p>
+        <p>7. 封完本关全部裂隙，进入下一关；四轮全部完成，根脉稳定。</p>
+        <button id="startBtn">开始游戏</button>
+    </div>
+
+    <div class="pop" id="popBox">
+        <h2 id="popTitle"></h2>
+        <p id="popMsg"></p>
+        <button id="popBtn">返回剧情</button>
+        <button id="retryBtn" style="margin-left:12px">重新挑战</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const roundText = document.getElementById("roundText");
+const timeText = document.getElementById("timeText");
+const sealText = document.getElementById("sealText");
+const popBox = document.getElementById("popBox");
+const popTitle = document.getElementById("popTitle");
+const popMsg = document.getElementById("popMsg");
+const popBtn = document.getElementById("popBtn");
+const retryBtn = document.getElementById("retryBtn");
+const rulePop = document.getElementById("rulePop");
+const startBtn = document.getElementById("startBtn");
+const battleBarWrap = document.getElementById("battleBarWrap");
+const barLeft = document.getElementById("barLeft");
+const barRight = document.getElementById("barRight");
+const gameWrap = document.getElementById("gameWrap");
+
+const params = new URLSearchParams(window.location.search);
+const mode = params.get("mode");
+const task = params.get("task");
+const isMoss = task === "moss";
+
+/* 文案：默认「根脉封堵」；task=moss 时换成「采集苔藓」（玩法不变，仅文案不同） */
+const TEXTS = isMoss
+  ? {
+      title: "采集苔藓",
+      progress: "采集进度",
+      rules: [
+        "1. WASD 操控角色在脱落的根脉间穿行。",
+        "2. 靠近根脉上的苔藓并停在区域内，自动开始采集。",
+        "3. 快速敲击空格键增强采集力量；苔藓根须会不断回缩，把力量向左拉扯。",
+        "4. 蓝色力量推到接近右端，苔藓被完整采下；红色力量压到最左端，采集失败。",
+        "5. 离开苔藓区域，采集立即终止，进度清空。",
+        "6. 第2关起出现移动虫怪，碰到直接失败；第3关新增巨大裂隙；第四关虫怪与巨型裂隙同时存在。",
+        "7. 采完本关全部苔藓，进入下一关；四轮全部完成，收获满满。"
+      ],
+      winTitle: "苔藓采集完成",
+      winMsg: "你采完了所有苔藓，满载而归。",
+      roundTitle: "苔藓已采",
+      roundMsg: "本关苔藓已全部采下，下一关根脉更加脆弱。",
+      timeUpTitle: "苔藓未能采完",
+      timeUpMsg: "本轮苔藓没能全部采下。",
+      giantTitle: "跌入巨大裂隙",
+      giantMsg: "你踩进了巨大裂隙，掉了下去。",
+      insectTitle: "被虫怪袭击",
+      insectMsg: "移动的地下虫怪撞上了你，采集失败。"
+    }
+  : {
+      title: "根脉封堵",
+      progress: "封堵进度",
+      rules: [
+        "1. WASD 操控角色在地下根脉间穿行。",
+        "2. 靠近黑色裂隙并停在裂隙区域内，自动开启拔河对抗。",
+        "3. 快速敲击空格键增强封堵力量；裂隙会持续侵蚀，把力量向左侧拉扯。",
+        "4. 蓝色力量推到接近右端，裂隙被封成绿色愈合状态；红色力量压到最左端，对抗失败。",
+        "5. 离开裂隙区域，对抗立即终止，进度清空。",
+        "6. 第2关起出现移动虫怪，碰到直接失败；第3关新增巨大裂隙；第四关虫怪与巨型裂隙同时存在。",
+        "7. 封完本关全部裂隙，进入下一关；四轮全部完成，根脉稳定。"
+      ],
+      winTitle: "根脉稳定",
+      winMsg: "四轮封堵全部完成，根脉暂时稳定，你成功守住了这片森林。",
+      roundTitle: "裂隙已封",
+      roundMsg: "本关全部裂隙已封堵，下一轮根脉将更加不稳定。",
+      timeUpTitle: "根脉大面积崩裂",
+      timeUpMsg: "本轮裂隙未能全部封堵。",
+      giantTitle: "被巨大裂隙吞噬",
+      giantMsg: "你靠近了巨大裂隙，被裂隙直接吞噬。",
+      insectTitle: "被虫怪袭击",
+      insectMsg: "移动的地下虫怪撞上了你，任务失败。"
+    };
+
+/* 应用文案到界面 */
+document.title = TEXTS.title;
+document.getElementById("progressLabel").textContent = TEXTS.progress;
+const ruleTitleEl = document.querySelector("#rulePop h2");
+if (ruleTitleEl) ruleTitleEl.textContent = TEXTS.title;
+document.querySelectorAll("#rulePop p").forEach(function (p, i) {
+  if (TEXTS.rules[i]) p.textContent = TEXTS.rules[i];
+});
+
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize",resizeCanvas);
+
+let keys = {};
+let player = {x:60,y:260,r:12,facing:"front"};
+let currentRound = 0;
+let remainTime = 60;
+let gameRun = false;
+let lastTs = 0;
+let spacePressed = false;
+
+const PLAYER_SPEED = 280;
+const MAX_POWER = 1.0;
+const MIN_POWER = 0.0;
+// 统一每一次空格敲击增加的力量，4轮都保持和第三轮一致
+const POWER_STEP = 0.05;
+
+const SPRITE_FILES = {
+    blue:{front:"blue_rogue_front",back:"blue_rogue_back",left:"blue_rogue_left",right:"blue_rogue_right"}
+};
+const SPRITES = {};
+const SPRITE_HEIGHT = 56;
+Object.keys(SPRITE_FILES).forEach(function(kind){
+    SPRITES[kind] = {};
+    Object.keys(SPRITE_FILES[kind]).forEach(function(dir){
+        const img = new Image();
+        img.src = "../images/game4/" + SPRITE_FILES[kind][dir] + ".png";
+        img.onerror = ()=>{};
+        SPRITES[kind][dir] = img;
+    });
+});
+
+function drawChar(img,x,y,h){
+    if(img && img.complete && img.naturalWidth && img.naturalHeight){
+        const w = h * img.naturalWidth / img.naturalHeight;
+        ctx.drawImage(img, x - w/2, y - h/2, w, h);
+        return true;
+    }
+    return false;
+}
+
+// 每轮侵蚀速率，第四轮侵蚀保留更高，但是单次空格加成和第三轮一样
+const roundsData = [
+    {time:60, leakCount:3, erosion:0.14, giantCount:0, insectCount:0},
+    {time:55, leakCount:4, erosion:0.18, giantCount:0, insectCount:2},
+    {time:50, leakCount:5, erosion:0.22, giantCount:2, insectCount:3},
+    {time:45, leakCount:6, erosion:0.27, giantCount:3, insectCount:4}
+];
+let leaks = [];
+let giantLeaks = [];
+let insects = [];
+let activeLeak = null;
+let battlePower = 0.5;
+let inBattle = false;
+let currentErosion = 0.14;
+
+// 判断普通裂隙是否落在巨大裂隙内
+function isInGiantLeak(lx,ly,lw,lh){
+    for(let g of giantLeaks){
+        const cx = lx + lw/2;
+        const cy = ly + lh/2;
+        const dist = Math.hypot(cx - g.x, cy - g.y);
+        if(dist < g.r){
+            return true;
+        }
+    }
+    return false;
+}
+
+function spawnLeaks(count){
+    const list = [];
+    for(let i=0;i<count;i++){
+        let valid = false;
+        let l;
+        // 循环生成直到不在巨大裂隙内部
+        while(!valid){
+            l = {
+                x: 100 + Math.random()*(canvas.width-200),
+                y: 80 + Math.random()*(canvas.height-160),
+                w:70,
+                h:32,
+                sealed:false
+            };
+            if(!isInGiantLeak(l.x,l.y,l.w,l.h)){
+                valid = true;
+            }
+        }
+        list.push(l);
+    }
+    return list;
+}
+
+function spawnGiantLeaks(count){
+    const arr = [];
+    for(let i=0;i<count;i++){
+        arr.push({
+            x: 200 + Math.random()*(canvas.width-400),
+            y: 140 + Math.random()*(canvas.height-280),
+            r: 54
+        });
+    }
+    return arr;
+}
+
+function createInsectDom(){
+    const div = document.createElement("div");
+    div.className = "insect";
+    div.innerHTML = `
+        <div class="insect-head"></div>
+        <div class="insect-body"></div>
+        <div class="insect-tail"></div>
+        <div class="insect-leg leg1"></div>
+        <div class="insect-leg leg2"></div>
+        <div class="insect-leg leg3"></div>
+        <div class="insect-leg leg4"></div>
+        <div class="insect-leg leg5"></div>
+        <div class="insect-leg leg6"></div>
+        <div class="insect-antenna ant1"></div>
+        <div class="insect-antenna ant2"></div>
+    `;
+    gameWrap.appendChild(div);
+    return div;
+}
+
+function spawnInsects(count){
+    const arr = [];
+    for(let i=0;i<count;i++){
+        const dom = createInsectDom();
+        arr.push({
+            dom:dom,
+            x:150 + Math.random()*(canvas.width-300),
+            y:100 + Math.random()*(canvas.height-200),
+            vx:(Math.random()-0.5)*120,
+            vy:(Math.random()-0.5)*120
+        });
+    }
+    return arr;
+}
+
+function clearInsects(){
+    insects.forEach(item=>{
+        if(item.dom && item.dom.parentNode){
+            item.dom.remove();
+        }
+    });
+    insects = [];
+}
+
+function loadRound(rid){
+    clearInsects();
+    const rd = roundsData[rid];
+    giantLeaks = spawnGiantLeaks(rd.giantCount);
+    leaks = spawnLeaks(rd.leakCount);
+    insects = spawnInsects(rd.insectCount);
+    activeLeak = null;
+    battlePower = 0.5;
+    inBattle = false;
+    currentErosion = rd.erosion;
+    player.x = 60;
+    player.y = canvas.height / 2;
+    remainTime = rd.time;
+    roundText.textContent = rid+1;
+    timeText.textContent = remainTime;
+    sealText.textContent = leaks.filter(l=>l.sealed).length + "/" + leaks.length;
+    gameRun = true;
+    lastTs = performance.now();
+    battleBarWrap.style.display = "none";
+}
+
+function getPlayerOnLeak(){
+    for(let l of leaks){
+        if(l.sealed) continue;
+        if(player.x + player.r > l.x && player.x - player.r < l.x + l.w
+        && player.y + player.r > l.y && player.y - player.r < l.y + l.h){
+            return l;
+        }
+    }
+    return null;
+}
+
+function checkGiantHit(){
+    for(let g of giantLeaks){
+        const d = Math.hypot(player.x - g.x, player.y - g.y);
+        if(d < g.r) return true;
+    }
+    return false;
+}
+
+function checkInsectHit(){
+    for(let ins of insects){
+        const d = Math.hypot(player.x - ins.x, player.y - ins.y);
+        if(d < 24) return true;
+    }
+    return false;
+}
+
+function applyErosion(dt){
+    battlePower -= currentErosion * dt;
+    if(battlePower < MIN_POWER) battlePower = MIN_POWER;
+}
+
+function applyPlayerPower(){
+    battlePower += POWER_STEP;
+    if(battlePower > MAX_POWER) battlePower = MAX_POWER;
+}
+
+function updateBattleUI(){
+    barLeft.style.width = (battlePower * 100)+"%";
+    barRight.style.width = ((1 - battlePower) * 100)+"%";
+}
+
+function checkBattleResult(){
+    if(battlePower >= 0.95){
+        if(activeLeak) activeLeak.sealed = true;
+        sealText.textContent = leaks.filter(l=>l.sealed).length + "/" + leaks.length;
+        inBattle = false;
+        battleBarWrap.style.display = "none";
+        activeLeak = null;
+        const sealedCnt = leaks.filter(l=>l.sealed).length;
+        const total = leaks.length;
+        if(sealedCnt === total){
+            roundEnd();
+        }
+    }else if(battlePower <= MIN_POWER + 0.001){
+        player.x += 40;
+        inBattle = false;
+        battleBarWrap.style.display = "none";
+        activeLeak = null;
+    }
+}
+
+function roundEnd(){
+    gameRun = false;
+    clearInterval(timerInterval);
+    const sealedCnt = leaks.filter(l=>l.sealed).length;
+    const total = leaks.length;
+
+    if(sealedCnt === total){
+        if(currentRound >= 3){
+            lastResult = "win";
+            showPopup(TEXTS.winTitle, TEXTS.winMsg, false);
+        }else{
+            showPopup(TEXTS.roundTitle, TEXTS.roundMsg, false, true);
+        }
+    }else{
+        showPopup(TEXTS.timeUpTitle, TEXTS.timeUpMsg, true);
+    }
+}
+
+let lastResult = "win";
+function showPopup(title,msg,isFail,isNext){
+    popBox.style.display="block";
+    popTitle.textContent = title;
+    popMsg.textContent = msg;
+    if(isFail){
+        lastResult = "fail";
+    }
+    const oldNext = popBox.querySelector("#nextRoundBtn");
+    if(oldNext) oldNext.remove();
+
+    if(isNext){
+        popBtn.style.display="none";
+        retryBtn.style.display="none";
+        const nextBtn = document.createElement("button");
+        nextBtn.id = "nextRoundBtn";
+        nextBtn.textContent = "进入下一轮";
+        nextBtn.onclick = ()=>{
+            popBox.style.display="none";
+            currentRound++;
+            loadRound(currentRound);
+            startTimer();
+        };
+        popBox.appendChild(nextBtn);
+    }else{
+        popBtn.style.display="inline-block";
+        retryBtn.style.display="inline-block";
+    }
+}
+
+function updatePlayer(dt){
+    let dx=0, dy=0;
+    if(keys["w"]||keys["W"]||keys["ArrowUp"]) dy -= 1;
+    if(keys["s"]||keys["S"]||keys["ArrowDown"]) dy += 1;
+    if(keys["a"]||keys["A"]||keys["ArrowLeft"]) dx -= 1;
+    if(keys["d"]||keys["D"]||keys["ArrowRight"]) dx += 1;
+
+    if(dx !== 0 || dy !== 0){
+        const len = Math.hypot(dx,dy);
+        dx /= len;
+        dy /= len;
+    }
+
+    if(dx > 0) player.facing = "right";
+    else if(dx < 0) player.facing = "left";
+    else if(dy > 0) player.facing = "front";
+    else if(dy < 0) player.facing = "back";
+
+    player.x += dx * PLAYER_SPEED * dt;
+    player.y += dy * PLAYER_SPEED * dt;
+
+    if(player.x < player.r) player.x = player.r;
+    if(player.x > canvas.width - player.r) player.x = canvas.width - player.r;
+    if(player.y < player.r) player.y = player.r;
+    if(player.y > canvas.height - player.r) player.y = canvas.height - player.r;
+}
+
+function updateInsect(dt){
+    insects.forEach(ins=>{
+        ins.x += ins.vx * dt;
+        ins.y += ins.vy * dt;
+        if(ins.x < 20 || ins.x > canvas.width -20) ins.vx *= -1;
+        if(ins.y <20 || ins.y > canvas.height -20) ins.vy *= -1;
+        ins.dom.style.left = ins.x + "px";
+        ins.dom.style.top = ins.y + "px";
+    })
+}
+
+function render(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    for(let l of leaks){
+        ctx.save();
+        if(l.sealed){
+            ctx.fillStyle="#2b8844";
+        }else{
+            ctx.fillStyle="#111111";
+        }
+        ctx.beginPath();
+        ctx.moveTo(l.x, l.y + l.h*0.3);
+        ctx.bezierCurveTo(l.x+l.w*0.3, l.y, l.x+l.w*0.7, l.y, l.x+l.w, l.y + l.h*0.4);
+        ctx.bezierCurveTo(l.x+l.w, l.y+l.h, l.x, l.y+l.h, l.x, l.y + l.h*0.3);
+        ctx.fill();
+        if(!l.sealed){
+            ctx.strokeStyle="#772222";
+            ctx.lineWidth=2;
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    for(let g of giantLeaks){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(g.x, g.y, g.r, 0, Math.PI*2);
+        ctx.fillStyle="rgba(60,0,0,0.75)";
+        ctx.fill();
+        ctx.strokeStyle="#ff3030";
+        ctx.lineWidth=4;
+        ctx.shadowColor="#ff2020";
+        ctx.shadowBlur=18;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    const pImg = SPRITES.blue[player.facing];
+    if(!drawChar(pImg, player.x, player.y, SPRITE_HEIGHT)){
+        ctx.fillStyle="#44bbff";
+        ctx.beginPath();
+        ctx.arc(player.x,player.y,player.r,0,Math.PI*2);
+        ctx.fill();
+    }
+}
+
+let timerInterval;
+function startTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(()=>{
+        if(!gameRun) return;
+        remainTime--;
+        timeText.textContent = remainTime;
+        if(remainTime <= 0){
+            clearInterval(timerInterval);
+            roundEnd();
+        }
+    },1000);
+}
+
+function gameLoop(ts){
+    const dt = Math.min((ts - lastTs)/1000, 0.05);
+    lastTs = ts;
+
+    if(gameRun){
+        updatePlayer(dt);
+        updateInsect(dt);
+
+        if(checkGiantHit()){
+            gameRun = false;
+            clearInterval(timerInterval);
+            showPopup(TEXTS.giantTitle, TEXTS.giantMsg, true);
+            return;
+        }
+        if(checkInsectHit()){
+            gameRun = false;
+            clearInterval(timerInterval);
+            showPopup(TEXTS.insectTitle, TEXTS.insectMsg, true);
+            return;
+        }
+
+        const onLeak = getPlayerOnLeak();
+
+        if(onLeak && !inBattle){
+            inBattle = true;
+            activeLeak = onLeak;
+            battlePower = 0.5;
+            battleBarWrap.style.display = "block";
+        }
+
+        if(inBattle){
+            if(!onLeak || onLeak !== activeLeak){
+                inBattle = false;
+                battleBarWrap.style.display = "none";
+                activeLeak = null;
+            }else{
+                applyErosion(dt);
+                updateBattleUI();
+                checkBattleResult();
+            }
+        }
+    }
+
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+window.addEventListener("keydown",e=>{
+    if(e.code === "Space"){
+        if(!spacePressed){
+            spacePressed = true;
+            if(inBattle && gameRun){
+                applyPlayerPower();
+            }
+        }
+        return;
+    }
+    keys[e.key]=true;
+});
+window.addEventListener("keyup",e=>{
+    keys[e.key]=false;
+    if(e.code === "Space"){
+        spacePressed = false;
+    }
+});
+
+startBtn.onclick = function(){
+    rulePop.style.display="none";
+    loadRound(currentRound);
+    startTimer();
+};
+
+popBtn.onclick = ()=>{
+    popBox.style.display="none";
+    fadeNav(`story-${mode}.html?minigameResult=${lastResult}`);
+};
+
+retryBtn.onclick = ()=>{
+    popBox.style.display="none";
+    // 重试后重新按本次结果结算，避免上一次失败状态残留
+    lastResult = "win";
+    // 完全重置按键状态，巨大裂隙失败重试也能正常移动
+    keys = {};
+    spacePressed = false;
+    loadRound(currentRound);
+    startTimer();
+};
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

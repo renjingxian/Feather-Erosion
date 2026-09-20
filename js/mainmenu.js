@@ -2,12 +2,11 @@ const playerInfo = document.getElementById("player-info");
 const startButton = document.getElementById("start-button");
 const continueButton = document.getElementById("continue-button");
 const achievementButton = document.getElementById("achievement-button");
-const developerButton = document.getElementById("developer-button");
 const settingsButton = document.getElementById("settings-button");
 const logoutButton = document.getElementById("logout-button");
 const save = loadGame();
 
-if (!save) continueButton.disabled = true;
+if (!save||save.finished) continueButton.disabled = true;
 else continueButton.disabled = false;
 
 //当前玩家
@@ -23,34 +22,36 @@ loadPlayer();
 //开始游戏
 startButton.addEventListener("click",function ()
 {
-    window.location.href = "prologue.html";
+    if (!getCurrentUser()) sessionStorage.removeItem(GUEST_SAVE_KEY);
+    clickNav("prologue.html");
 });
 
 //继续游戏
 continueButton.addEventListener("click",function ()
 {
-    if (save.story=="empire") window.location.href = "story-empire.html?mode=continue";
-    if (save.story=="sky") window.location.href = "story-sky.html?mode=continue";
-    if (save.story=="under") window.location.href = "story-under.html?mode=continue";
-    if (save.story=="forest") window.location.href = "story-forest.html?mode=continue";
-    if (save.story=="prologue") window.location.href = "prologue.html?mode=continue";
+    if (save.story=="empire") clickNav("story-empire.html?mode=continue");
+    if (save.story=="sky") clickNav("story-sky.html?mode=continue");
+    if (save.story=="under") clickNav("story-under.html?mode=continue");
+    if (save.story=="forest") clickNav("story-forest.html?mode=continue");
+    if (save.story=="prologue") clickNav("prologue.html?mode=continue");
 });
 
 //成就系统
 achievementButton.addEventListener("click",function ()
 {
-    window.location.href = "achievements.html";
+    clickNav("achievement.html");
 });
 
-//设置
+//攻略
 settingsButton.addEventListener("click",function ()
 {
-    window.location.href = "settings.html";
+    clickNav("walkthrough.html");
 });
 
-//返回登录
+//退出登录
 logoutButton.addEventListener("click",function ()
 {
+    if (!getCurrentUser()) sessionStorage.removeItem(GUEST_SAVE_KEY);
     logoutUser();
-    window.location.href = "login.html";
+    clickNav("login.html");
 });

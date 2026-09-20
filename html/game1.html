@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script src="../js/transition.js"></script>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>风脉回廊｜晶体挖掘小游戏</title>
 <link rel="stylesheet" href="../css/common.css" />
 <style>
@@ -23,7 +25,6 @@
     overflow: hidden;
     background: url("../images/矿工背景.jpg") no-repeat center center;
     background-size: cover;
-    cursor: pointer;
   }
   #startPanel,
   #endPanel {
@@ -75,18 +76,6 @@
     color: #fff;
     border-radius: 6px;
     font-size: 18px;
-    user-select: none;
-  }
-  #backBtn {
-    position: absolute;
-    left: 20px;
-    bottom: 20px;
-    z-index: 30;
-    padding: 8px 14px;
-    background: rgba(0, 0, 0, 0.55);
-    color: #fff;
-    text-decoration: none;
-    border-radius: 6px;
     user-select: none;
   }
   #hookPivot {
@@ -245,9 +234,9 @@
   <div id="startPanel">
     <h1>风晶挖掘挑战</h1>
     <p>
-      点击画面发射抓钩。<br />
-      蓝色风晶 <b>+1</b>，翠绿风晶 <b>+3</b>，钻石 <b>+5</b>，灰色石头 <b>-2</b>。<br />
-      目标：<b>30 秒内拿到 15 分</b>。
+      按下【空格键】发射抓钩。<br />
+      小矿石 <b>+3</b>，中矿石 <b>+5</b>，大矿石 <b>+10</b>，灰色石头 <b>-2</b>。<br />
+      目标：<b>60 秒内采集 30 块晶石</b>。
     </p>
     <button id="startBtn">开始游戏</button>
   </div>
@@ -258,16 +247,21 @@
   </div>
   <div id="hud" style="display:none;">
     <div class="hud-box">得分：<span id="scoreText">0</span></div>
-    <div class="hud-box">时间：<span id="timeText">30</span>s</div>
-    <div class="hud-box">目标：15分</div>
+    <div class="hud-box">时间：<span id="timeText">60</span>s</div>
+    <div class="hud-box">目标：30块</div>
+    <div class="hud-box">操作：空格发射抓钩</div>
   </div>
-  <a id="backBtn" href="map-sky.html" style="display:none;">返回地图</a>
   <div id="hookPivot"></div>
   <div id="chain"></div>
   <div id="hook"></div>
 </div>
+<audio id="bgm" loop>
+  <source src="../audios/gameBGM.mp3" type="audio/mpeg">
+</audio>
 <script>
 (function () {
+  const mode = new URLSearchParams(location.search).get("mode") || "sky";
+  document.getElementById("bgm").volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem("feather_erosion_bgm_volume") || "1")));
   const gameWrap = document.getElementById("gameWrap");
   const startPanel = document.getElementById("startPanel");
   const endPanel = document.getElementById("endPanel");
@@ -276,19 +270,18 @@
   const hud = document.getElementById("hud");
   const scoreText = document.getElementById("scoreText");
   const timeText = document.getElementById("timeText");
-  const backBtn = document.getElementById("backBtn");
   const startBtn = document.getElementById("startBtn");
   const backMapBtn = document.getElementById("backMapBtn");
   const chain = document.getElementById("chain");
   const hook = document.getElementById("hook");
   const config = {
-    swingSpeed: 0.018,
+    swingSpeed: 0.018 * 144,
     swingRange: 1.35,
-    extendSpeed: 11,
-    retractSpeed: 8,
-    fastRetractSpeed: 15,
-    gameTime: 30,
-    targetScore: 15,
+    extendSpeed: 11 * 144,
+    retractSpeed: 8 * 144,
+    fastRetractSpeed: 15 * 144,
+    gameTime: 60,
+    targetScore: 30,
     itemCount: {
       ore1: 5,
       ore2: 3,
@@ -307,6 +300,8 @@
   let items = [];
   let timer = null;
   let rafId = null;
+  let lastTime = 0;
+
   function updateScore() {
     scoreText.textContent = score;
   }
@@ -337,9 +332,9 @@
     dom.style.top = y + "px";
     gameWrap.appendChild(dom);
     let val = 0;
-    if(randType==="ore-1") val=1;
-    else if(randType==="ore-2") val=3;
-    else if(randType==="diamond") val=5;
+    if(randType==="ore-1") val=3;
+    else if(randType==="ore-2") val=5;
+    else if(randType==="diamond") val=10;
     else if(randType==="stone") val=-2;
     items.push({
       dom: dom,
@@ -429,18 +424,27 @@
     clearInterval(timer);
     state = "idle";
     if (score >= config.targetScore) {
-      endTitle.textContent = "挑战成功！";
-      endText.textContent = "你在 " + config.gameTime + " 秒内拿到了 " + score + " 分，可以返回地图领取奖励。";
+      endTitle.textContent = "采集完成！";
+      endText.textContent = "你在 " + config.gameTime + " 秒内采集了 " + score + " 块晶石。";
+      backMapBtn.textContent = "返回剧情";
+      backMapBtn.dataset.result = "win";
     } else {
-      endTitle.textContent = "挑战失败";
-      endText.textContent = "最终得分 " + score + "，目标 " + config.targetScore + " 分。再试一次吧！";
+      endTitle.textContent = "采集失败";
+      endText.textContent = "晶石数量好像还不够，再采集一轮吧。";
+      backMapBtn.textContent = "再来一次";
+      backMapBtn.dataset.result = "fail";
     }
     endPanel.style.display = "flex";
   }
-  function loop() {
+  function loop(time) {
+    rafId = requestAnimationFrame(loop);
+    let dt = (time - lastTime) / 1000;
+    lastTime = time;
+    if(dt > 0.05) dt = 0.05;
+
     const wrapH = gameWrap.clientHeight;
     if (state === "swing") {
-      angle += config.swingSpeed * angleDir;
+      angle += config.swingSpeed * dt * angleDir;
       if (angle > config.swingRange) {
         angle = config.swingRange;
         angleDir = -1;
@@ -451,7 +455,7 @@
       updateHook(angle);
     }
     if (state === "extend") {
-      chainLength += config.extendSpeed;
+      chainLength += config.extendSpeed * dt;
       updateHook(fireAngle);
       if (!target) {
         const hit = checkHit();
@@ -466,7 +470,7 @@
     }
     if (state === "retract") {
       const speed = target ? config.retractSpeed : config.fastRetractSpeed;
-      chainLength -= speed;
+      chainLength -= speed * dt;
       updateHook(fireAngle);
       if (chainLength <= 110) {
         chainLength = 110;
@@ -480,7 +484,6 @@
         state = "swing";
       }
     }
-    rafId = requestAnimationFrame(loop);
   }
   function fire() {
     if (state !== "swing") return;
@@ -488,6 +491,7 @@
     state = "extend";
   }
   function startGame() {
+    document.getElementById("bgm").play().catch(e=>{});
     score = 0;
     timeLeft = config.gameTime;
     angle = 0;
@@ -499,10 +503,10 @@
     startPanel.style.display = "none";
     endPanel.style.display = "none";
     hud.style.display = "flex";
-    backBtn.style.display = "block";
     createItems();
     state = "swing";
-    loop();
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(loop);
     clearInterval(timer);
     timer = setInterval(function () {
       timeLeft--;
@@ -517,13 +521,23 @@
     startGame();
   });
   backMapBtn.addEventListener("click", function () {
-    window.location.href = "map-sky.html";
+    if (backMapBtn.dataset.result === "win") {
+      document.getElementById("bgm").pause();
+      fadeNav("story-" + mode + ".html?checkResult=win&result=win");
+    } else {
+      startGame();
+    }
   });
-  gameWrap.addEventListener("click", function (e) {
-    if (state !== "swing") return;
-    if (e.target.closest("#startPanel")) return;
-    if (e.target.closest("#endPanel")) return;
-    if (e.target.id === "backBtn") return;
+  // 空格键发射
+  document.addEventListener("keydown", function(e){
+    if(e.code === "Space"){
+      e.preventDefault();
+      fire();
+    }
+  });
+  // 手机端：点击画面发射抓钩（排除按钮）
+  document.addEventListener("click", function(e){
+    if(e.target.closest("button")) return;
     fire();
   });
   window.addEventListener("resize", function () {
